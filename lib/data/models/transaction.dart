@@ -1,9 +1,14 @@
+import 'package:isar/isar.dart';
+
+part 'transaction.g.dart';
+
+@collection
 class Transaction {
-  int? id;
+  Id? id;
   
   String title;
   double amount;
-  String type; // "income" | "expense"
+  String type;
   String category;
   DateTime date;
   String? note;
@@ -19,7 +24,7 @@ class Transaction {
   });
 
   Transaction copyWith({
-    int? id,
+    Id? id,
     String? title,
     double? amount,
     String? type,
