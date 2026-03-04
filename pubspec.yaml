@@ -1,0 +1,61 @@
+name: nook
+description: "A premium expense and income tracker app"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.4.0 <4.0.0'
+  flutter: '>=3.22.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # === DATABASE ===
+  isar: ^3.1.0+1
+  isar_flutter_libs: ^3.1.0+1
+  path_provider: ^2.1.5
+
+  # === STATE ===
+  flutter_riverpod: ^2.6.1
+
+  # === NAVIGATION ===
+  go_router: ^14.6.2
+
+  # === UI & ANIMATIONS ===
+  flutter_animate: ^4.5.0
+  skeletonizer: ^1.4.2
+  fl_chart: ^0.69.0
+  gap: ^3.0.1
+
+  # === iOS NATIVE FEEL ===
+  flutter_slidable: ^3.1.1
+  modal_bottom_sheet: ^3.0.0
+  haptic_feedback: ^0.5.1+1
+
+  # === FORMS & FORMATTING ===
+  intl: ^0.19.0
+  currency_text_input_formatter: ^2.2.3
+
+  # === DATA CLASSES ===
+  json_annotation: ^4.9.0
+
+  # === UTILITIES ===
+  flutter_native_splash: ^2.4.3
+  package_info_plus: ^8.1.2
+  cupertino_icons: ^1.0.8
+  liquid_glass_renderer: ^0.2.0-dev.4
+  liquid_glass_widgets: ^0.3.0-dev.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  build_runner: ^2.4.13
+  isar_generator: ^3.1.0+1
+  json_serializable: ^6.8.0
+  flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.2
+  mocktail: ^1.0.4
+
+flutter:
+  uses-material-design: true
