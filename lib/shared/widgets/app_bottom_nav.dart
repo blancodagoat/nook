@@ -5,7 +5,6 @@ import 'package:nook/core/constants/app_colors.dart';
 import 'package:nook/core/constants/app_text_styles.dart';
 
 class AppBottomNav extends StatelessWidget {
-
   const AppBottomNav({
     required this.currentIndex, required this.onTap, super.key,
   });
@@ -20,46 +19,50 @@ class AppBottomNav extends StatelessWidget {
       bottom: 0,
       left: 0,
       right: 0,
-      child: RepaintBoundary(
-        child: ClipRect(
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-            child: Container(
-              padding: EdgeInsets.only(
-                bottom: bottomPadding,
-                top: 8,
+      child: ClipRRect(
+        clipBehavior: Clip.antiAlias,
+        borderRadius: BorderRadius.only(
+          topRight: Radius.circular(34),
+          bottomRight: Radius.circular(34),
+        ),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: Container(
+            padding: EdgeInsets.only(
+              top: 8,
+              bottom: bottomPadding + 8,
+            ),
+            margin: const EdgeInsets.only(top: 8),
+            decoration: const BoxDecoration(
+              color: Color(0xD90A0A0F),
+              border: const Border(
+                top: BorderSide(color: AppColors.frostBorder, width: 0.5),
               ),
-              decoration: const BoxDecoration(
-                color: Color(0xD90A0A0F),
-                border: Border(
-                  top: BorderSide(color: AppColors.frostBorder, width: 0.5),
+            ),
+            child: Row(
+              children: [
+                _TabItem(
+                  icon: Icons.home_rounded,
+                  label: 'Home',
+                  index: 0,
+                  current: currentIndex,
+                  onTap: onTap,
                 ),
-              ),
-              child: Row(
-                children: [
-                  _TabItem(
-                    icon: Icons.home_rounded,
-                    label: 'Home',
-                    index: 0,
-                    current: currentIndex,
-                    onTap: onTap,
-                  ),
-                  _TabItem(
-                    icon: Icons.receipt_long_rounded,
-                    label: 'History',
-                    index: 1,
-                    current: currentIndex,
-                    onTap: onTap,
-                  ),
-                  _TabItem(
-                    icon: Icons.analytics_rounded,
-                    label: 'Summary',
-                    index: 2,
-                    current: currentIndex,
-                    onTap: onTap,
-                  ),
-                ],
-              ),
+                _TabItem(
+                  icon: Icons.receipt_long_rounded,
+                  label: 'History',
+                  index: 1,
+                  current: currentIndex,
+                  onTap: onTap,
+                ),
+                _TabItem(
+                  icon: Icons.analytics_rounded,
+                  label: 'Summary',
+                  index: 2,
+                  current: currentIndex,
+                  onTap: onTap,
+                ),
+              ],
             ),
           ),
         ),
@@ -69,7 +72,6 @@ class AppBottomNav extends StatelessWidget {
 }
 
 class _TabItem extends StatelessWidget {
-
   const _TabItem({
     required this.icon,
     required this.label,
@@ -77,22 +79,24 @@ class _TabItem extends StatelessWidget {
     required this.current,
     required this.onTap,
   });
+
   final IconData icon;
   final String label;
   final int index;
   final int current;
   final void Function(int) onTap;
 
+  bool get isActive => index == current;
+
   @override
   Widget build(BuildContext context) {
-    final isActive = index == current;
-
-    return Expanded(
-      child: GestureDetector(
-        onTap: () {
-          HapticFeedback.selectionClick();
-          onTap(index);
-        },
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        HapticFeedback.selectionClick();
+        onTap(index);
+      },
+      child: Expanded(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

@@ -106,11 +106,16 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                                         .deleteTransaction(transaction.id!);
 
                                     if (context.mounted) {
+                                      ScaffoldMessenger.of(context).clearSnackBars();
                                       ScaffoldMessenger.of(context).showSnackBar(
                                         SnackBar(
-                                          content: const Text('Transaction deleted'),
+                                          content: const Text(
+                                            'Transaction deleted',
+                                            style: TextStyle(color: AppColors.textPrimary),
+                                          ),
                                           backgroundColor: AppColors.surface1,
                                           behavior: SnackBarBehavior.floating,
+                                          duration: const Duration(seconds: 2),
                                           shape: RoundedRectangleBorder(
                                             borderRadius: BorderRadius.circular(16),
                                             side: const BorderSide(color: AppColors.frostBorder),

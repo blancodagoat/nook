@@ -195,16 +195,19 @@ class _BalanceStat extends StatelessWidget {
               child: Icon(icon, color: color, size: 16),
             ),
             const Gap(10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(label, style: AppTextStyles.caption),
-                const Gap(1),
-                Text(
-                  formatter.format(amount),
-                  style: AppTextStyles.cardAmount.copyWith(color: color),
-                ),
-              ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label, style: AppTextStyles.caption),
+                  const Gap(1),
+                  Text(
+                    formatter.format(amount),
+                    style: AppTextStyles.cardAmount.copyWith(color: color),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
             ),
           ],
         ),
