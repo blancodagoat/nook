@@ -20,8 +20,7 @@ class AppBottomNav extends StatelessWidget {
       left: 0,
       right: 0,
       child: ClipRRect(
-        clipBehavior: Clip.antiAlias,
-        borderRadius: BorderRadius.only(
+        borderRadius: const BorderRadius.only(
           topRight: Radius.circular(34),
           bottomRight: Radius.circular(34),
         ),
@@ -35,7 +34,7 @@ class AppBottomNav extends StatelessWidget {
             margin: const EdgeInsets.only(top: 8),
             decoration: const BoxDecoration(
               color: Color(0xD90A0A0F),
-              border: const Border(
+              border: Border(
                 top: BorderSide(color: AppColors.frostBorder, width: 0.5),
               ),
             ),
