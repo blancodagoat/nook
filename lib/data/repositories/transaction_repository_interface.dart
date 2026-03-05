@@ -1,4 +1,4 @@
-import '../models/transaction.dart';
+import 'package:nook/data/models/transaction.dart';
 
 abstract class TransactionRepository {
   Future<int> insert(Transaction transaction);

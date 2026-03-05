@@ -4,6 +4,11 @@ part 'transaction.g.dart';
 
 @collection
 class Transaction {
+
+  Transaction({
+    required this.title, required this.amount, required this.type, required this.category, required this.date, this.id,
+    this.note,
+  });
   Id? id;
   
   String title;
@@ -12,16 +17,6 @@ class Transaction {
   String category;
   DateTime date;
   String? note;
-
-  Transaction({
-    this.id,
-    required this.title,
-    required this.amount,
-    required this.type,
-    required this.category,
-    required this.date,
-    this.note,
-  });
 
   Transaction copyWith({
     Id? id,
@@ -53,39 +48,39 @@ class Transaction {
 }
 
 class DashboardStats {
-  final double totalIncome;
-  final double totalExpense;
-  final List<Transaction> recentTransactions;
 
   DashboardStats({
     required this.totalIncome,
     required this.totalExpense,
     required this.recentTransactions,
   });
+  final double totalIncome;
+  final double totalExpense;
+  final List<Transaction> recentTransactions;
 
   double get balance => totalIncome - totalExpense;
 }
 
 class CategorySummary {
-  final String category;
-  final double total;
-  final int count;
 
   CategorySummary({
     required this.category,
     required this.total,
     required this.count,
   });
+  final String category;
+  final double total;
+  final int count;
 }
 
 class DailySummary {
-  final DateTime date;
-  final double income;
-  final double expense;
 
   DailySummary({
     required this.date,
     required this.income,
     required this.expense,
   });
+  final DateTime date;
+  final double income;
+  final double expense;
 }

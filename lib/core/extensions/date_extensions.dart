@@ -2,7 +2,7 @@ extension DateExtensions on DateTime {
   String formatMonth() {
     const months = [
       'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
+      'July', 'August', 'September', 'October', 'November', 'December',
     ];
     return '${months[month - 1]} $year';
   }
@@ -10,7 +10,7 @@ extension DateExtensions on DateTime {
   String formatShortMonth() {
     const months = [
       'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
     ];
     return '${months[month - 1]} $year';
   }
@@ -37,7 +37,7 @@ extension DateExtensions on DateTime {
     return year == other.year && month == other.month;
   }
 
-  DateTime get startOfMonth => DateTime(year, month, 1);
+  DateTime get startOfMonth => DateTime(year, month);
   DateTime get endOfMonth => DateTime(year, month + 1, 0, 23, 59, 59);
 
   String formatRelativeDate() {
@@ -51,7 +51,7 @@ extension DateExtensions on DateTime {
   String formatFullDate() {
     const months = [
       'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
+      'July', 'August', 'September', 'October', 'November', 'December',
     ];
     const weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     return '${weekdays[weekday - 1]}, ${months[month - 1]} $day, $year';

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'app_colors.dart';
+import 'package:nook/core/constants/app_colors.dart';
 
 class AppTextStyles {
   static TextStyle get heroBalance => const TextStyle(
@@ -8,7 +8,7 @@ class AppTextStyles {
         fontWeight: FontWeight.w700,
         color: AppColors.textPrimary,
         letterSpacing: -1.5,
-        height: 1.0,
+        height: 1,
       );
 
   static TextStyle get heroAmount => const TextStyle(
@@ -16,8 +16,8 @@ class AppTextStyles {
         fontSize: 56,
         fontWeight: FontWeight.w700,
         color: AppColors.textPrimary,
-        letterSpacing: -2.0,
-        height: 1.0,
+        letterSpacing: -2,
+        height: 1,
         fontFeatures: [FontFeature.tabularFigures()],
       );
 

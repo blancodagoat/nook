@@ -1,20 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../core/constants/app_text_styles.dart';
 
 class AnimatedBalance extends StatefulWidget {
+
+  const AnimatedBalance({
+    required this.amount, required this.style, super.key,
+    this.duration = const Duration(milliseconds: 800),
+    this.curve = Curves.easeOutExpo,
+  });
   final double amount;
   final TextStyle style;
   final Duration duration;
   final Curve curve;
-
-  const AnimatedBalance({
-    super.key,
-    required this.amount,
-    required this.style,
-    this.duration = const Duration(milliseconds: 800),
-    this.curve = Curves.easeOutExpo,
-  });
 
   @override
   State<AnimatedBalance> createState() => _AnimatedBalanceState();
@@ -53,7 +50,7 @@ class _AnimatedBalanceState extends State<AnimatedBalance>
     ).animate(CurvedAnimation(
       parent: _controller,
       curve: widget.curve,
-    ));
+    ),);
     _controller.forward(from: 0);
   }
 
@@ -68,7 +65,7 @@ class _AnimatedBalanceState extends State<AnimatedBalance>
     return AnimatedBuilder(
       animation: _animation,
       builder: (context, child) {
-        final formatter = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
+        final formatter = NumberFormat.currency(symbol: 'HUF ', decimalDigits: 2);
         return Text(
           formatter.format(_animation.value),
           style: widget.style,

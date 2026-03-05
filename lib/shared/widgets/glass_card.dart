@@ -1,19 +1,11 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import '../../core/constants/app_colors.dart';
+import 'package:nook/core/constants/app_colors.dart';
 
 class GlassCard extends StatelessWidget {
-  final Widget child;
-  final EdgeInsetsGeometry? padding;
-  final double borderRadius;
-  final Color? tintColor;
-  final double tintOpacity;
-  final bool hasGlow;
-  final VoidCallback? onTap;
 
   const GlassCard({
-    super.key,
-    required this.child,
+    required this.child, super.key,
     this.padding,
     this.borderRadius = 24,
     this.tintColor,
@@ -21,6 +13,13 @@ class GlassCard extends StatelessWidget {
     this.hasGlow = false,
     this.onTap,
   });
+  final Widget child;
+  final EdgeInsetsGeometry? padding;
+  final double borderRadius;
+  final Color? tintColor;
+  final double tintOpacity;
+  final bool hasGlow;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +41,7 @@ class GlassCard extends StatelessWidget {
             children: [
               if (tintColor != null)
                 Container(
-                  color: tintColor!.withOpacity(tintOpacity),
+                  color: tintColor!.withValues(alpha: tintOpacity),
                 ),
               if (padding != null)
                 Padding(
@@ -63,7 +62,7 @@ class GlassCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(borderRadius),
           boxShadow: [
             BoxShadow(
-              color: tintColor!.withOpacity(0.2),
+              color: tintColor!.withValues(alpha: 0.2),
               blurRadius: 24,
               spreadRadius: 2,
             ),

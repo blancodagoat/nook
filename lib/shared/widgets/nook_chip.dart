@@ -1,19 +1,16 @@
 import 'package:flutter/material.dart';
-import '../../core/constants/app_colors.dart';
+import 'package:nook/core/constants/app_colors.dart';
 
 class NookChip extends StatelessWidget {
+
+  const NookChip({
+    required this.label, required this.color, required this.onTap, super.key,
+    this.isSelected = false,
+  });
   final String label;
   final Color color;
   final bool isSelected;
   final VoidCallback onTap;
-
-  const NookChip({
-    super.key,
-    required this.label,
-    required this.color,
-    this.isSelected = false,
-    required this.onTap,
-  });
 
   @override
   Widget build(BuildContext context) {
@@ -24,11 +21,10 @@ class NookChip extends StatelessWidget {
         curve: Curves.easeOutCubic,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.15) : AppColors.surface2,
+          color: isSelected ? color.withValues(alpha: 0.15) : AppColors.surface2,
           borderRadius: BorderRadius.circular(50),
           border: Border.all(
-            color: isSelected ? color.withOpacity(0.5) : Colors.transparent,
-            width: 1,
+            color: isSelected ? color.withValues(alpha: 0.5) : Colors.transparent,
           ),
         ),
         child: Text(

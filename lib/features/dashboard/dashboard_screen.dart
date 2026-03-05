@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:haptic_feedback/haptic_feedback.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_text_styles.dart';
-import '../../shared/widgets/ambient_background.dart';
-import '../../shared/widgets/empty_state_widget.dart';
-import '../../shared/widgets/nook_card.dart';
-import '../add_transaction/add_transaction_sheet.dart';
-import 'dashboard_provider.dart';
-import 'widgets/balance_hero_card.dart';
-import 'widgets/transaction_list_item.dart';
+import 'package:haptic_feedback/haptic_feedback.dart';
+import 'package:nook/core/constants/app_colors.dart';
+import 'package:nook/core/constants/app_text_styles.dart';
+import 'package:nook/data/models/transaction.dart';
+import 'package:nook/features/add_transaction/add_transaction_sheet.dart';
+import 'package:nook/features/dashboard/dashboard_provider.dart';
+import 'package:nook/features/dashboard/widgets/balance_hero_card.dart';
+import 'package:nook/features/dashboard/widgets/transaction_list_item.dart';
+import 'package:nook/shared/widgets/ambient_background.dart';
+import 'package:nook/shared/widgets/empty_state_widget.dart';
+import 'package:nook/shared/widgets/nook_card.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -56,12 +57,12 @@ class DashboardScreen extends ConsumerWidget {
                             padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
                             child: Row(
                               children: [
-                                Text("RECENT TRANSACTIONS", style: AppTextStyles.sectionLabel),
+                                Text('RECENT TRANSACTIONS', style: AppTextStyles.sectionLabel),
                                 const Spacer(),
                                 GestureDetector(
                                   onTap: () => context.go('/history'),
                                   child: Text(
-                                    "See all",
+                                    'See all',
                                     style: AppTextStyles.caption.copyWith(
                                       color: AppColors.accent,
                                       fontWeight: FontWeight.w700,
@@ -88,7 +89,6 @@ class DashboardScreen extends ConsumerWidget {
                                         content: const Text('Transaction deleted'),
                                         backgroundColor: AppColors.surface1,
                                         behavior: SnackBarBehavior.floating,
-                                        duration: const Duration(seconds: 4),
                                         shape: RoundedRectangleBorder(
                                           borderRadius: BorderRadius.circular(16),
                                           side: const BorderSide(color: AppColors.frostBorder),
@@ -120,7 +120,7 @@ class DashboardScreen extends ConsumerWidget {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.error_outline, color: AppColors.negative, size: 48),
+                          const Icon(Icons.error_outline, color: AppColors.negative, size: 48),
                           const SizedBox(height: 16),
                           Text(
                             'Failed to load transactions',
@@ -154,7 +154,7 @@ class DashboardScreen extends ConsumerWidget {
           onPressed: () async {
             await Haptics.vibrate(HapticsType.heavy);
             if (context.mounted) {
-              showModalBottomSheet(
+              await showModalBottomSheet<dynamic>(
                 context: context,
                 isScrollControlled: true,
                 useSafeArea: true,
@@ -169,8 +169,8 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  void _showEditSheet(BuildContext context, WidgetRef ref, transaction) {
-    showModalBottomSheet(
+  void _showEditSheet(BuildContext context, WidgetRef ref, Transaction transaction) {
+    showModalBottomSheet<dynamic>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
@@ -181,36 +181,36 @@ class DashboardScreen extends ConsumerWidget {
 }
 
 class _QuickStatsRow extends StatelessWidget {
-  final dynamic stats;
 
   const _QuickStatsRow({required this.stats});
+  final dynamic stats;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+    return const Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
           Expanded(
             child: _MiniMetric(
-              label: "Daily Avg",
-              value: "\$85",
+              label: 'Daily Avg',
+              value: '85 HUF',
               icon: Icons.today_rounded,
             ),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10),
           Expanded(
             child: _MiniMetric(
-              label: "Largest",
-              value: "\$120",
+              label: 'Largest',
+              value: '120 HUF',
               icon: Icons.bolt_rounded,
             ),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10),
           Expanded(
             child: _MiniMetric(
-              label: "Savings",
-              value: "23%",
+              label: 'Savings',
+              value: '23%',
               icon: Icons.savings_rounded,
             ),
           ),
@@ -221,21 +221,19 @@ class _QuickStatsRow extends StatelessWidget {
 }
 
 class _MiniMetric extends StatelessWidget {
-  final String label;
-  final String value;
-  final IconData icon;
 
   const _MiniMetric({
     required this.label,
     required this.value,
     required this.icon,
   });
+  final String label;
+  final String value;
+  final IconData icon;
 
   @override
   Widget build(BuildContext context) {
     return NookCard(
-      padding: const EdgeInsets.all(16),
-      radius: 16,
       backgroundColor: AppColors.surface2,
       hasBorder: false,
       child: Row(
@@ -256,10 +254,10 @@ class _MiniMetric extends StatelessWidget {
 }
 
 class _SpendingProgress extends StatelessWidget {
-  final double spent;
-  final double budget;
 
   const _SpendingProgress({required this.spent, required this.budget});
+  final double spent;
+  final double budget;
 
   @override
   Widget build(BuildContext context) {
@@ -273,10 +271,10 @@ class _SpendingProgress extends StatelessWidget {
           children: [
             Row(
               children: [
-                Text("Monthly Spending", style: AppTextStyles.caption),
+                Text('Monthly Spending', style: AppTextStyles.caption),
                 const Spacer(),
                 Text(
-                  "${(percentage * 100).toStringAsFixed(0)}%",
+                  '${(percentage * 100).toStringAsFixed(0)}%',
                   style: AppTextStyles.mono.copyWith(
                     color: percentage > 0.85 ? AppColors.negative : AppColors.textSecondary,
                   ),
@@ -309,9 +307,9 @@ class _SpendingProgress extends StatelessWidget {
             const SizedBox(height: 8),
             Row(
               children: [
-                Text("\$${spent.toStringAsFixed(0)}", style: AppTextStyles.mono),
+                Text('${spent.toStringAsFixed(0)} HUF', style: AppTextStyles.mono),
                 const Spacer(),
-                Text("of \$${budget.toStringAsFixed(0)}", style: AppTextStyles.mono),
+                Text('of ${budget.toStringAsFixed(0)} HUF', style: AppTextStyles.mono),
               ],
             ),
           ],
@@ -322,9 +320,9 @@ class _SpendingProgress extends StatelessWidget {
 }
 
 class _AddButton extends StatefulWidget {
-  final VoidCallback onPressed;
 
   const _AddButton({required this.onPressed});
+  final VoidCallback onPressed;
 
   @override
   State<_AddButton> createState() => _AddButtonState();
@@ -370,7 +368,7 @@ class _AddButtonState extends State<_AddButton> with SingleTickerProviderStateMi
                 borderRadius: BorderRadius.circular(50),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.accent.withOpacity(0.5),
+                    color: AppColors.accent.withValues(alpha: 0.5),
                     blurRadius: 24,
                     spreadRadius: 2,
                   ),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../constants/app_colors.dart';
+import 'package:nook/core/constants/app_colors.dart';
 
 class AppTheme {
   static ThemeData get darkTheme {
@@ -8,14 +8,12 @@ class AppTheme {
       useMaterial3: true,
       brightness: Brightness.dark,
       scaffoldBackgroundColor: AppColors.bg,
-      colorScheme: ColorScheme.dark(
-        background: AppColors.bg,
+      colorScheme: const ColorScheme.dark(
         surface: AppColors.surface1,
         primary: AppColors.accent,
         secondary: AppColors.positive,
         error: AppColors.negative,
         onPrimary: Colors.white,
-        onBackground: AppColors.textPrimary,
         onSurface: AppColors.textPrimary,
       ),
       splashFactory: NoSplash.splashFactory,

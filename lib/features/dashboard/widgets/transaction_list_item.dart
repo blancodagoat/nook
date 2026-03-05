@@ -3,34 +3,33 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:haptic_feedback/haptic_feedback.dart';
 import 'package:intl/intl.dart';
-import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/app_text_styles.dart';
-import '../../../core/constants/category_meta.dart';
-import '../../../shared/widgets/nook_card.dart';
-import '../../../data/models/transaction.dart';
+import 'package:nook/core/constants/app_colors.dart';
+import 'package:nook/core/constants/app_text_styles.dart';
+import 'package:nook/core/constants/category_meta.dart';
+import 'package:nook/data/models/transaction.dart';
+import 'package:nook/shared/widgets/nook_card.dart';
 
 class TransactionListItem extends StatelessWidget {
+
+  const TransactionListItem({
+    required this.transaction, super.key,
+    this.onTap,
+    this.onDelete,
+    this.showDate = false,
+    this.index = 0,
+  });
   final Transaction transaction;
   final VoidCallback? onTap;
   final VoidCallback? onDelete;
   final bool showDate;
   final int index;
 
-  const TransactionListItem({
-    super.key,
-    required this.transaction,
-    this.onTap,
-    this.onDelete,
-    this.showDate = false,
-    this.index = 0,
-  });
-
   @override
   Widget build(BuildContext context) {
     final meta = CategoryData.getMeta(transaction.category);
     final isIncome = transaction.type == 'income';
     final categoryColor = AppColors.getCategoryColor(transaction.category);
-    final formatter = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
+    final formatter = NumberFormat.currency(symbol: 'HUF ', decimalDigits: 2);
     final timeFormatter = DateFormat('HH:mm');
 
     return Padding(
@@ -48,16 +47,15 @@ class TransactionListItem extends StatelessWidget {
                   onDelete!();
                 }
               },
-              backgroundColor: AppColors.negative.withOpacity(0.12),
+              backgroundColor: AppColors.negative.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(16),
-              child: Icon(Icons.delete_outline_rounded, color: AppColors.negative, size: 20),
+              child: const Icon(Icons.delete_outline_rounded, color: AppColors.negative, size: 20),
             ),
           ],
         ),
         child: NookCard(
           tint: categoryColor,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          radius: 16,
           hasBorder: false,
           child: GestureDetector(
             onTap: onTap,
@@ -67,7 +65,7 @@ class TransactionListItem extends StatelessWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: meta.color.withOpacity(0.15),
+                    color: meta.color.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(13),
                   ),
                   child: Center(
@@ -117,8 +115,8 @@ class TransactionListItem extends StatelessWidget {
 }
 
 class Gap extends StatelessWidget {
-  final double size;
   const Gap(this.size, {super.key});
+  final double size;
 
   @override
   Widget build(BuildContext context) => SizedBox(width: size, height: size);

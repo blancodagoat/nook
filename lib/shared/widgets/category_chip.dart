@@ -1,20 +1,18 @@
 import 'package:flutter/material.dart';
-import '../../core/constants/app_colors.dart';
-import '../../core/constants/category_meta.dart';
+import 'package:nook/core/constants/app_colors.dart';
+import 'package:nook/core/constants/category_meta.dart';
 
 class CategoryChip extends StatelessWidget {
+
+  const CategoryChip({
+    required this.category, required this.onTap, super.key,
+    this.isSelected = false,
+    this.showLabel = true,
+  });
   final String category;
   final bool isSelected;
   final VoidCallback onTap;
   final bool showLabel;
-
-  const CategoryChip({
-    super.key,
-    required this.category,
-    this.isSelected = false,
-    required this.onTap,
-    this.showLabel = true,
-  });
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +24,7 @@ class CategoryChip extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? meta.color.withOpacity(0.2) : AppColors.glassWhite8,
+          color: isSelected ? meta.color.withValues(alpha: 0.2) : AppColors.glassWhite8,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected ? meta.color : AppColors.glassBorder,
@@ -59,14 +57,13 @@ class CategoryChip extends StatelessWidget {
 }
 
 class CategoryDot extends StatelessWidget {
-  final String category;
-  final double size;
 
   const CategoryDot({
-    super.key,
-    required this.category,
+    required this.category, super.key,
     this.size = 8,
   });
+  final String category;
+  final double size;
 
   @override
   Widget build(BuildContext context) {

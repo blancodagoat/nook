@@ -1,12 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_text_styles.dart';
-import '../../features/dashboard/dashboard_provider.dart';
-import 'glass_card.dart';
+import 'package:nook/core/constants/app_colors.dart';
+import 'package:nook/core/constants/app_text_styles.dart';
+import 'package:nook/features/dashboard/dashboard_provider.dart';
+import 'package:nook/shared/widgets/glass_card.dart';
 
 class MonthSelector extends ConsumerWidget {
   const MonthSelector({super.key});
@@ -28,7 +28,7 @@ class MonthSelector extends ConsumerWidget {
                 selectedMonth.month - 1,
               );
             },
-            child: Icon(
+            child: const Icon(
               Icons.chevron_left,
               color: AppColors.text50,
               size: 24,
@@ -51,7 +51,7 @@ class MonthSelector extends ConsumerWidget {
                 ref.read(selectedMonthProvider.notifier).state = nextMonth;
               }
             },
-            child: Icon(
+            child: const Icon(
               Icons.chevron_right,
               color: AppColors.text50,
               size: 24,
@@ -65,13 +65,13 @@ class MonthSelector extends ConsumerWidget {
   void _showMonthPicker(BuildContext context, WidgetRef ref) {
     final selectedMonth = ref.read(selectedMonthProvider);
     
-    showCupertinoModalPopup(
+    showCupertinoModalPopup<void>(
       context: context,
       builder: (context) => Container(
         height: 300,
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: AppColors.surface0,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(40)),
           border: Border(
             top: BorderSide(color: AppColors.glassBorder, width: 0.5),
           ),
@@ -80,7 +80,7 @@ class MonthSelector extends ConsumerWidget {
           children: [
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 border: Border(
                   bottom: BorderSide(color: AppColors.glassBorder, width: 0.5),
                 ),

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:intl/intl.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
-import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/app_text_styles.dart';
-import '../../../shared/widgets/nook_card.dart';
-import '../../../shared/widgets/animated_balance.dart';
-import '../dashboard_provider.dart';
-import '../../../data/models/transaction.dart';
+import 'package:intl/intl.dart';
+import 'package:nook/core/constants/app_colors.dart';
+import 'package:nook/core/constants/app_text_styles.dart';
+import 'package:nook/data/models/transaction.dart';
+import 'package:nook/features/dashboard/dashboard_provider.dart';
+import 'package:nook/shared/widgets/animated_balance.dart';
+import 'package:nook/shared/widgets/nook_card.dart';
 
 class BalanceHeroCard extends ConsumerWidget {
   const BalanceHeroCard({super.key});
@@ -19,7 +19,7 @@ class BalanceHeroCard extends ConsumerWidget {
 
     return statsAsync.when(
       data: (stats) => _buildCard(context, stats),
-      loading: () => _buildLoadingCard(),
+      loading: _buildLoadingCard,
       error: (_, __) => _buildErrorCard(),
     );
   }
@@ -33,7 +33,7 @@ class BalanceHeroCard extends ConsumerWidget {
         children: [
           Row(
             children: [
-              Text("Total Balance", style: AppTextStyles.sectionLabel),
+              Text('Total Balance', style: AppTextStyles.sectionLabel),
               const Spacer(),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -42,7 +42,7 @@ class BalanceHeroCard extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  "Mar 2026",
+                  'Mar 2026',
                   style: AppTextStyles.caption,
                 ),
               ),
@@ -63,7 +63,7 @@ class BalanceHeroCard extends ConsumerWidget {
               ),
               const Gap(4),
               Text(
-                "12% vs last month",
+                '12% vs last month',
                 style: AppTextStyles.caption.copyWith(
                   color: stats.balance >= 0 ? AppColors.positive : AppColors.negative,
                 ),
@@ -76,14 +76,14 @@ class BalanceHeroCard extends ConsumerWidget {
           Row(
             children: [
               _BalanceStat(
-                label: "Income",
+                label: 'Income',
                 amount: stats.totalIncome,
                 color: AppColors.positive,
                 icon: Icons.arrow_downward_rounded,
               ),
               Container(width: 0.5, height: 44, color: AppColors.frostBorder),
               _BalanceStat(
-                label: "Spent",
+                label: 'Spent',
                 amount: stats.totalExpense,
                 color: AppColors.negative,
                 icon: Icons.arrow_upward_rounded,
@@ -149,11 +149,11 @@ class BalanceHeroCard extends ConsumerWidget {
   }
 
   Widget _buildErrorCard() {
-    return NookCard(
-      padding: const EdgeInsets.all(24),
+    return const NookCard(
+      padding: EdgeInsets.all(24),
       radius: 28,
       tint: AppColors.negative,
-      child: const Center(
+      child: Center(
         child: Text(
           'Failed to load data',
           style: TextStyle(color: AppColors.negative),
@@ -164,10 +164,6 @@ class BalanceHeroCard extends ConsumerWidget {
 }
 
 class _BalanceStat extends StatelessWidget {
-  final String label;
-  final double amount;
-  final Color color;
-  final IconData icon;
 
   const _BalanceStat({
     required this.label,
@@ -175,10 +171,14 @@ class _BalanceStat extends StatelessWidget {
     required this.color,
     required this.icon,
   });
+  final String label;
+  final double amount;
+  final Color color;
+  final IconData icon;
 
   @override
   Widget build(BuildContext context) {
-    final formatter = NumberFormat.currency(symbol: '\$');
+    final formatter = NumberFormat.currency(symbol: 'HUF ');
 
     return Expanded(
       child: Padding(
@@ -189,7 +189,7 @@ class _BalanceStat extends StatelessWidget {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: color.withOpacity(0.12),
+                color: color.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(icon, color: color, size: 16),

@@ -1,18 +1,16 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
-import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_text_styles.dart';
-import '../../core/extensions/date_extensions.dart';
-import '../../shared/widgets/empty_state_widget.dart';
-import '../../shared/widgets/nook_card.dart';
-import '../../shared/widgets/nook_chip.dart';
-import '../../shared/widgets/ambient_background.dart';
-import '../dashboard/dashboard_provider.dart';
-import '../dashboard/widgets/transaction_list_item.dart';
-import '../add_transaction/add_transaction_sheet.dart';
+import 'package:nook/core/constants/app_colors.dart';
+import 'package:nook/core/constants/app_text_styles.dart';
+import 'package:nook/data/models/transaction.dart';
+import 'package:nook/features/add_transaction/add_transaction_sheet.dart';
+import 'package:nook/features/dashboard/dashboard_provider.dart';
+import 'package:nook/features/dashboard/widgets/transaction_list_item.dart';
+import 'package:nook/shared/widgets/ambient_background.dart';
+import 'package:nook/shared/widgets/empty_state_widget.dart';
+import 'package:nook/shared/widgets/nook_chip.dart';
 
 class HistoryScreen extends ConsumerStatefulWidget {
   const HistoryScreen({super.key});
@@ -113,7 +111,6 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                                           content: const Text('Transaction deleted'),
                                           backgroundColor: AppColors.surface1,
                                           behavior: SnackBarBehavior.floating,
-                                          duration: const Duration(seconds: 4),
                                           shape: RoundedRectangleBorder(
                                             borderRadius: BorderRadius.circular(16),
                                             side: const BorderSide(color: AppColors.frostBorder),
@@ -122,7 +119,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                                       );
                                     }
                                   },
-                                  onTap: () => showModalBottomSheet(
+                                  onTap: () => showModalBottomSheet<void>(
                                     context: context,
                                     isScrollControlled: true,
                                     useSafeArea: true,
@@ -143,7 +140,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                       child: CircularProgressIndicator(color: AppColors.accent),
                     ),
                   ),
-                  error: (error, _) => SliverFillRemaining(
+                  error: (error, _) => const SliverFillRemaining(
                     child: Center(
                       child: Text(
                         'Error loading transactions',
@@ -163,11 +160,11 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     );
   }
 
-  Map<DateTime, List<dynamic>> _groupByMonth(List<dynamic> transactions) {
-    final Map<DateTime, List<dynamic>> grouped = {};
+  Map<DateTime, List<Transaction>> _groupByMonth(List<Transaction> transactions) {
+    final grouped = <DateTime, List<Transaction>>{};
 
     for (final transaction in transactions) {
-      final date = transaction.date as DateTime;
+      final date = transaction.date;
       final key = DateTime(date.year, date.month);
 
       grouped.putIfAbsent(key, () => []).add(transaction);
@@ -178,10 +175,6 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
 }
 
 class _SearchBarDelegate extends SliverPersistentHeaderDelegate {
-  final TextEditingController searchController;
-  final ValueChanged<String> onChanged;
-  final String? filterType;
-  final ValueChanged<String?> onFilterChanged;
 
   _SearchBarDelegate({
     required this.searchController,
@@ -189,11 +182,15 @@ class _SearchBarDelegate extends SliverPersistentHeaderDelegate {
     required this.filterType,
     required this.onFilterChanged,
   });
+  final TextEditingController searchController;
+  final ValueChanged<String> onChanged;
+  final String? filterType;
+  final ValueChanged<String?> onFilterChanged;
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
-      color: AppColors.bg.withOpacity(0.96),
+      color: AppColors.bg.withValues(alpha: 0.96),
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
       child: Column(
         children: [
@@ -205,13 +202,13 @@ class _SearchBarDelegate extends SliverPersistentHeaderDelegate {
             child: CupertinoTextField(
               controller: searchController,
               onChanged: onChanged,
-              placeholder: "Search transactions...",
-              placeholderStyle: TextStyle(color: AppColors.textTertiary),
-              prefix: Padding(
-                padding: const EdgeInsets.only(left: 14),
+              placeholder: 'Search transactions...',
+              placeholderStyle: const TextStyle(color: AppColors.textTertiary),
+              prefix: const Padding(
+                padding: EdgeInsets.only(left: 14),
                 child: Icon(CupertinoIcons.search, color: AppColors.textTertiary, size: 18),
               ),
-              style: TextStyle(color: AppColors.textPrimary),
+              style: const TextStyle(color: AppColors.textPrimary),
               decoration: null,
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
             ),
@@ -222,21 +219,21 @@ class _SearchBarDelegate extends SliverPersistentHeaderDelegate {
             child: Row(
               children: [
                 NookChip(
-                  label: "All",
+                  label: 'All',
                   color: AppColors.accent,
                   isSelected: filterType == null,
                   onTap: () => onFilterChanged(null),
                 ),
                 const SizedBox(width: 6),
                 NookChip(
-                  label: "Income",
+                  label: 'Income',
                   color: AppColors.positive,
                   isSelected: filterType == 'income',
                   onTap: () => onFilterChanged('income'),
                 ),
                 const SizedBox(width: 6),
                 NookChip(
-                  label: "Expenses",
+                  label: 'Expenses',
                   color: AppColors.negative,
                   isSelected: filterType == 'expense',
                   onTap: () => onFilterChanged('expense'),
@@ -262,13 +259,13 @@ class _SearchBarDelegate extends SliverPersistentHeaderDelegate {
 }
 
 class _MonthSectionHeader extends StatelessWidget {
-  final DateTime month;
-  final List<dynamic> transactions;
 
   const _MonthSectionHeader({
     required this.month,
     required this.transactions,
   });
+  final DateTime month;
+  final List<Transaction> transactions;
 
   @override
   Widget build(BuildContext context) {
@@ -284,10 +281,10 @@ class _MonthSectionHeader extends StatelessWidget {
     }
 
     final net = income - expense;
-    final formatter = NumberFormat.compactCurrency(symbol: '\$');
+    final formatter = NumberFormat.compactCurrency(symbol: 'HUF ');
 
     return Container(
-      color: AppColors.bg.withOpacity(0.96),
+      color: AppColors.bg.withValues(alpha: 0.96),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: Row(
         children: [

@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
-import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_text_styles.dart';
+import 'package:nook/core/constants/app_colors.dart';
+import 'package:nook/core/constants/app_text_styles.dart';
 
 class EmptyStateWidget extends StatelessWidget {
+
+  const EmptyStateWidget({
+    required this.title, required this.subtitle, super.key,
+    this.icon = Icons.receipt_long_rounded,
+  });
   final String title;
   final String subtitle;
   final IconData icon;
-
-  const EmptyStateWidget({
-    super.key,
-    required this.title,
-    required this.subtitle,
-    this.icon = Icons.receipt_long_rounded,
-  });
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +23,7 @@ class EmptyStateWidget extends StatelessWidget {
             Container(
               width: 100,
               height: 100,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppColors.glassWhite8,
                 shape: BoxShape.circle,
               ),

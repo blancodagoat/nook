@@ -1,6 +1,5 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import '../constants/app_colors.dart';
+import 'package:nook/core/constants/app_colors.dart';
 
 class GradientUtils {
   static Widget meshBackground() {
@@ -16,10 +15,10 @@ class GradientUtils {
               shape: BoxShape.circle,
               gradient: RadialGradient(
                 colors: [
-                  AppColors.accentA.withOpacity(0.15),
+                  AppColors.accentA.withValues(alpha: 0.15),
                   Colors.transparent,
                 ],
-                radius: 1.0,
+                radius: 1,
               ),
             ),
           ),
@@ -34,10 +33,10 @@ class GradientUtils {
               shape: BoxShape.circle,
               gradient: RadialGradient(
                 colors: [
-                  AppColors.incomeA.withOpacity(0.08),
+                  AppColors.incomeA.withValues(alpha: 0.08),
                   Colors.transparent,
                 ],
-                radius: 1.0,
+                radius: 1,
               ),
             ),
           ),
@@ -52,10 +51,10 @@ class GradientUtils {
               shape: BoxShape.circle,
               gradient: RadialGradient(
                 colors: [
-                  AppColors.expenseA.withOpacity(0.06),
+                  AppColors.expenseA.withValues(alpha: 0.06),
                   Colors.transparent,
                 ],
-                radius: 1.0,
+                radius: 1,
               ),
             ),
           ),
@@ -70,10 +69,10 @@ class GradientUtils {
               shape: BoxShape.circle,
               gradient: RadialGradient(
                 colors: [
-                  AppColors.accentB.withOpacity(0.05),
+                  AppColors.accentB.withValues(alpha: 0.05),
                   Colors.transparent,
                 ],
-                radius: 1.0,
+                radius: 1,
               ),
             ),
           ),
@@ -107,6 +106,6 @@ class GradientUtils {
   }
 
   static Color categoryGlow(String category) {
-    return AppColors.getCategoryColor(category).withOpacity(0.25);
+    return AppColors.getCategoryColor(category).withValues(alpha: 0.25);
   }
 }

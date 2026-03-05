@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'core/constants/app_colors.dart';
-import 'core/theme/app_theme.dart';
-import 'features/dashboard/dashboard_screen.dart';
-import 'features/history/history_screen.dart';
-import 'features/summary/summary_screen.dart';
-import 'shared/widgets/app_bottom_nav.dart';
+import 'package:nook/core/constants/app_colors.dart';
+import 'package:nook/core/theme/app_theme.dart';
+import 'package:nook/features/dashboard/dashboard_screen.dart';
+import 'package:nook/features/history/history_screen.dart';
+import 'package:nook/features/summary/summary_screen.dart';
+import 'package:nook/shared/widgets/app_bottom_nav.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
@@ -58,9 +58,9 @@ class LedgerApp extends StatelessWidget {
 }
 
 class MainShell extends StatefulWidget {
-  final Widget child;
 
-  const MainShell({super.key, required this.child});
+  const MainShell({required this.child, super.key});
+  final Widget child;
 
   @override
   State<MainShell> createState() => _MainShellState();
@@ -85,13 +85,10 @@ class _MainShellState extends State<MainShell> {
               switch (index) {
                 case 0:
                   context.go('/');
-                  break;
                 case 1:
                   context.go('/history');
-                  break;
                 case 2:
                   context.go('/summary');
-                  break;
               }
             },
           ),

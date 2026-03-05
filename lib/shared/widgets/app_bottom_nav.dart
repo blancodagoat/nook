@@ -1,81 +1,74 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_text_styles.dart';
+import 'package:nook/core/constants/app_colors.dart';
+import 'package:nook/core/constants/app_text_styles.dart';
 
 class AppBottomNav extends StatelessWidget {
-  final int currentIndex;
-  final Function(int) onTap;
 
   const AppBottomNav({
-    super.key,
-    required this.currentIndex,
-    required this.onTap,
+    required this.currentIndex, required this.onTap, super.key,
   });
+  final int currentIndex;
+  final void Function(int) onTap;
 
   @override
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
-    return RepaintBoundary(
-      child: Positioned(
-        bottom: 0,
-        left: 0,
-        right: 0,
+    return Positioned(
+      bottom: 0,
+      left: 0,
+      right: 0,
+      child: RepaintBoundary(
         child: ClipRect(
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-          child: Container(
-            padding: EdgeInsets.only(
-              bottom: bottomPadding,
-              top: 8,
-            ),
-            decoration: const BoxDecoration(
-              color: Color(0xD90A0A0F),
-              border: Border(
-                top: BorderSide(color: AppColors.frostBorder, width: 0.5),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+            child: Container(
+              padding: EdgeInsets.only(
+                bottom: bottomPadding,
+                top: 8,
               ),
-            ),
-            child: Row(
-              children: [
-                _TabItem(
-                  icon: Icons.home_rounded,
-                  label: "Home",
-                  index: 0,
-                  current: currentIndex,
-                  onTap: onTap,
+              decoration: const BoxDecoration(
+                color: Color(0xD90A0A0F),
+                border: Border(
+                  top: BorderSide(color: AppColors.frostBorder, width: 0.5),
                 ),
-                _TabItem(
-                  icon: Icons.receipt_long_rounded,
-                  label: "History",
-                  index: 1,
-                  current: currentIndex,
-                  onTap: onTap,
-                ),
-                _TabItem(
-                  icon: Icons.analytics_rounded,
-                  label: "Summary",
-                  index: 2,
-                  current: currentIndex,
-                  onTap: onTap,
-                ),
-              ],
+              ),
+              child: Row(
+                children: [
+                  _TabItem(
+                    icon: Icons.home_rounded,
+                    label: 'Home',
+                    index: 0,
+                    current: currentIndex,
+                    onTap: onTap,
+                  ),
+                  _TabItem(
+                    icon: Icons.receipt_long_rounded,
+                    label: 'History',
+                    index: 1,
+                    current: currentIndex,
+                    onTap: onTap,
+                  ),
+                  _TabItem(
+                    icon: Icons.analytics_rounded,
+                    label: 'Summary',
+                    index: 2,
+                    current: currentIndex,
+                    onTap: onTap,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
       ),
-    ),
-  );
+    );
   }
 }
 
 class _TabItem extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final int index;
-  final int current;
-  final Function(int) onTap;
 
   const _TabItem({
     required this.icon,
@@ -84,6 +77,11 @@ class _TabItem extends StatelessWidget {
     required this.current,
     required this.onTap,
   });
+  final IconData icon;
+  final String label;
+  final int index;
+  final int current;
+  final void Function(int) onTap;
 
   @override
   Widget build(BuildContext context) {

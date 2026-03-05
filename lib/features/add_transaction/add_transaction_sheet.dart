@@ -1,18 +1,21 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:haptic_feedback/haptic_feedback.dart';
-import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_text_styles.dart';
-import '../../core/constants/category_meta.dart';
-import '../../data/models/transaction.dart';
-import '../dashboard/dashboard_provider.dart';
+import 'package:nook/core/constants/app_colors.dart';
+import 'package:nook/core/constants/app_text_styles.dart';
+import 'package:nook/core/constants/category_meta.dart';
+import 'package:nook/data/models/custom_category.dart';
+import 'package:nook/data/models/transaction.dart';
+import 'package:nook/features/categories/add_category_dialog.dart';
+import 'package:nook/features/categories/category_provider.dart';
+import 'package:nook/features/dashboard/dashboard_provider.dart';
 
 class AddTransactionSheet extends ConsumerStatefulWidget {
-  final Transaction? transaction;
 
   const AddTransactionSheet({super.key, this.transaction});
+  final Transaction? transaction;
 
   @override
   ConsumerState<AddTransactionSheet> createState() => _AddTransactionSheetState();
@@ -63,20 +66,20 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet>
   }
 
   List<String> get _categories {
-    return _isExpense ? CategoryData.expenseCategories : CategoryData.incomeCategories;
+    final customCatsAsync = ref.watch(customCategoriesProvider);
+    final customCats = customCatsAsync.valueOrNull ?? <CustomCategory>[];
+    return CategoryData.getAllCategories(_isExpense ? 'expense' : 'income', customCats);
   }
 
   @override
   Widget build(BuildContext context) {
-    final isEditing = widget.transaction != null;
-
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Container(
         height: MediaQuery.of(context).size.height * 0.92,
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: AppColors.surface1,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
           border: Border(
             top: BorderSide(color: AppColors.frostBorder, width: 0.5),
           ),
@@ -100,7 +103,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet>
               padding: const EdgeInsets.symmetric(horizontal: 32),
               child: Column(
                 children: [
-                  Text("Amount", style: AppTextStyles.sectionLabel),
+                  Text('Amount', style: AppTextStyles.sectionLabel),
                   const SizedBox(height: 8),
                   _AmountDisplay(
                     amount: _amountController.text,
@@ -162,13 +165,13 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet>
             child: Container(
               decoration: BoxDecoration(
                 color: _isExpense
-                    ? AppColors.negative.withOpacity(0.15)
-                    : AppColors.positive.withOpacity(0.15),
+                    ? AppColors.negative.withValues(alpha: 0.15)
+                    : AppColors.positive.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
                   color: _isExpense
-                      ? AppColors.negative.withOpacity(0.4)
-                      : AppColors.positive.withOpacity(0.4),
+                      ? AppColors.negative.withValues(alpha: 0.4)
+                      : AppColors.positive.withValues(alpha: 0.4),
                   width: 0.75,
                 ),
               ),
@@ -224,15 +227,21 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet>
   }
 
   Widget _buildCategorySelector() {
+    final categories = _categories;
+    
     return SizedBox(
       height: 90,
       child: ListView.separated(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         scrollDirection: Axis.horizontal,
-        itemCount: _categories.length,
+        itemCount: categories.length + 1,
         separatorBuilder: (_, __) => const SizedBox(width: 12),
         itemBuilder: (context, index) {
-          final category = _categories[index];
+          if (index == categories.length) {
+            return _buildAddCategoryButton(context);
+          }
+          
+          final category = categories[index];
           final meta = CategoryData.getMeta(category);
           final isSelected = category == _selectedCategory;
 
@@ -249,12 +258,11 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet>
                   width: 56,
                   height: 56,
                   decoration: BoxDecoration(
-                    color: isSelected ? meta.color.withOpacity(0.15) : AppColors.surface2,
+                    color: isSelected ? meta.color.withValues(alpha: 0.15) : AppColors.surface2,
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(
-                      color: isSelected ? meta.color.withOpacity(0.5) : Colors.transparent,
-                      width: 1,
-                    ),
+                        color: isSelected ? meta.color.withValues(alpha: 0.5) : Colors.transparent,
+                      ),
                   ),
                   child: Center(
                     child: Text(meta.emoji, style: const TextStyle(fontSize: 24)),
@@ -274,8 +282,72 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet>
               .animate(target: isSelected ? 1 : 0)
               .scale(begin: const Offset(0.95, 0.95), end: const Offset(1.02, 1.02))
               .then()
-              .scale(end: const Offset(1.0, 1.0));
+              .scale(end: const Offset(1, 1));
         },
+      ),
+    );
+  }
+
+  Widget _buildAddCategoryButton(BuildContext context) {
+    return GestureDetector(
+      onTap: () async {
+        await Haptics.vibrate(HapticsType.light);
+        if (!mounted) return;
+        
+        await showModalBottomSheet<void>(
+          context: this.context,
+          isScrollControlled: true,
+          useSafeArea: true,
+          backgroundColor: Colors.transparent,
+          builder: (context) => AddCategoryDialog(
+            type: _isExpense ? 'expense' : 'income',
+            onCategoryAdded: (name, emoji, colorHex) async {
+              final customCategory = CustomCategory(
+                name: name,
+                emoji: emoji,
+                type: _isExpense ? 'expense' : 'income',
+                colorHex: colorHex,
+              );
+              
+              await ref.read(customCategoryRepositoryProvider).insert(customCategory);
+              ref.invalidate(customCategoriesProvider);
+              
+              if (mounted) {
+                setState(() {
+                  _selectedCategory = name;
+                });
+              }
+            },
+          ),
+        );
+      },
+      child: Column(
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: AppColors.surface2,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: AppColors.frostBorder,
+              ),
+            ),
+            child: const Icon(
+              Icons.add_rounded,
+              color: AppColors.accent,
+              size: 28,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Add',
+            style: AppTextStyles.caption.copyWith(
+              color: AppColors.accent,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -288,9 +360,9 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet>
       ),
       child: CupertinoTextField(
         controller: _titleController,
-        style: TextStyle(color: AppColors.textPrimary, fontSize: 16),
-        placeholder: 'What was this for?',
-        placeholderStyle: TextStyle(color: AppColors.textTertiary),
+        style: const TextStyle(color: AppColors.textPrimary, fontSize: 16),
+        placeholder: 'Add description (optional)',
+        placeholderStyle: const TextStyle(color: AppColors.textTertiary),
         decoration: null,
         padding: const EdgeInsets.all(16),
       ),
@@ -329,9 +401,9 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet>
       ),
       child: CupertinoTextField(
         controller: _noteController,
-        style: TextStyle(color: AppColors.textPrimary, fontSize: 16),
+        style: const TextStyle(color: AppColors.textPrimary, fontSize: 16),
         placeholder: 'Add a note...',
-        placeholderStyle: TextStyle(color: AppColors.textTertiary),
+        placeholderStyle: const TextStyle(color: AppColors.textTertiary),
         decoration: null,
         maxLines: 3,
         padding: const EdgeInsets.all(16),
@@ -363,7 +435,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet>
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: (_isExpense ? AppColors.negative : AppColors.positive).withOpacity(0.3),
+                    color: (_isExpense ? AppColors.negative : AppColors.positive).withValues(alpha: 0.3),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),
@@ -382,7 +454,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet>
     );
   }
 
-  void _save() async {
+  Future<void> _save() async {
     final amountText = _amountController.text.replaceAll(RegExp(r'[^\d.]'), '');
     final amount = double.tryParse(amountText) ?? 0;
 
@@ -391,14 +463,13 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet>
       return;
     }
 
-    if (_titleController.text.trim().isEmpty) {
-      _showError('Please enter a title');
-      return;
-    }
+    final title = _titleController.text.trim().isEmpty 
+        ? _selectedCategory 
+        : _titleController.text.trim();
 
     final transaction = Transaction(
       id: widget.transaction?.id,
-      title: _titleController.text.trim(),
+      title: title,
       amount: amount,
       type: _isExpense ? 'expense' : 'income',
       category: _selectedCategory,
@@ -418,7 +489,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet>
   }
 
   void _showError(String message) {
-    showCupertinoDialog(
+    showCupertinoDialog<void>(
       context: context,
       builder: (context) => CupertinoAlertDialog(
         title: const Text('Error'),
@@ -435,10 +506,6 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet>
 }
 
 class _AmountDisplay extends StatelessWidget {
-  final String amount;
-  final bool isExpense;
-  final TextEditingController controller;
-  final VoidCallback onChanged;
 
   const _AmountDisplay({
     required this.amount,
@@ -446,6 +513,10 @@ class _AmountDisplay extends StatelessWidget {
     required this.controller,
     required this.onChanged,
   });
+  final String amount;
+  final bool isExpense;
+  final TextEditingController controller;
+  final VoidCallback onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -455,15 +526,14 @@ class _AmountDisplay extends StatelessWidget {
         color: AppColors.surface2,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: (isExpense ? AppColors.negative : AppColors.positive).withOpacity(0.5),
-          width: 1.0,
+          color: (isExpense ? AppColors.negative : AppColors.positive).withValues(alpha: 0.5),
         ),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            '\$',
+            'HUF',
             style: AppTextStyles.cardAmount.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(width: 4),

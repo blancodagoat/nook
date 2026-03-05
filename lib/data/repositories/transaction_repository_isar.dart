@@ -1,7 +1,8 @@
 import 'package:isar/isar.dart';
+import 'package:nook/data/models/custom_category.dart';
+import 'package:nook/data/models/transaction.dart';
+import 'package:nook/data/repositories/transaction_repository_interface.dart';
 import 'package:path_provider/path_provider.dart';
-import '../models/transaction.dart';
-import 'transaction_repository_interface.dart';
 
 class TransactionRepositoryIsar implements TransactionRepository {
   Isar? _isar;
@@ -11,9 +12,8 @@ class TransactionRepositoryIsar implements TransactionRepository {
     
     final dir = await getApplicationDocumentsDirectory();
     _isar = await Isar.open(
-      [TransactionSchema],
+      [TransactionSchema, CustomCategorySchema],
       directory: dir.path,
-      inspector: true,
     );
     return _isar!;
   }
@@ -21,15 +21,15 @@ class TransactionRepositoryIsar implements TransactionRepository {
   @override
   Future<int> insert(Transaction transaction) async {
     final isar = await _db;
-    return await isar.writeTxn(() async {
-      return await isar.transactions.put(transaction);
+    return isar.writeTxn(() async {
+      return isar.transactions.put(transaction);
     });
   }
 
   @override
   Future<int> update(Transaction transaction) async {
     final isar = await _db;
-    return await isar.writeTxn(() async {
+    return isar.writeTxn(() async {
       await isar.transactions.put(transaction);
       return 1;
     });
@@ -38,7 +38,7 @@ class TransactionRepositoryIsar implements TransactionRepository {
   @override
   Future<int> delete(int id) async {
     final isar = await _db;
-    return await isar.writeTxn(() async {
+    return isar.writeTxn(() async {
       final deleted = await isar.transactions.delete(id);
       return deleted ? 1 : 0;
     });
@@ -47,22 +47,22 @@ class TransactionRepositoryIsar implements TransactionRepository {
   @override
   Future<Transaction?> getById(int id) async {
     final isar = await _db;
-    return await isar.transactions.get(id);
+    return isar.transactions.get(id);
   }
 
   @override
   Future<List<Transaction>> getAll() async {
     final isar = await _db;
-    return await isar.transactions.where().sortByDateDesc().findAll();
+    return isar.transactions.where().sortByDateDesc().findAll();
   }
 
   @override
   Future<List<Transaction>> getByMonth(DateTime month) async {
     final isar = await _db;
-    final startOfMonth = DateTime(month.year, month.month, 1);
+    final startOfMonth = DateTime(month.year, month.month);
     final endOfMonth = DateTime(month.year, month.month + 1, 0, 23, 59, 59);
 
-    return await isar.transactions
+    return isar.transactions
         .filter()
         .dateBetween(startOfMonth, endOfMonth)
         .sortByDateDesc()
@@ -72,7 +72,7 @@ class TransactionRepositoryIsar implements TransactionRepository {
   @override
   Future<List<Transaction>> getByDateRange(DateTime start, DateTime end) async {
     final isar = await _db;
-    return await isar.transactions
+    return isar.transactions
         .filter()
         .dateBetween(start, end)
         .sortByDateDesc()
@@ -82,7 +82,7 @@ class TransactionRepositoryIsar implements TransactionRepository {
   @override
   Future<List<Transaction>> search(String query) async {
     final isar = await _db;
-    return await isar.transactions
+    return isar.transactions
         .filter()
         .titleContains(query, caseSensitive: false)
         .or()
@@ -94,7 +94,7 @@ class TransactionRepositoryIsar implements TransactionRepository {
   @override
   Future<List<Transaction>> getRecent({int limit = 10}) async {
     final isar = await _db;
-    return await isar.transactions.where().sortByDateDesc().limit(limit).findAll();
+    return isar.transactions.where().sortByDateDesc().limit(limit).findAll();
   }
 
   @override
@@ -102,7 +102,7 @@ class TransactionRepositoryIsar implements TransactionRepository {
     final isar = await _db;
     
     if (month != null) {
-      final startOfMonth = DateTime(month.year, month.month, 1);
+      final startOfMonth = DateTime(month.year, month.month);
       final endOfMonth = DateTime(month.year, month.month + 1, 0, 23, 59, 59);
       
       final transactions = await isar.transactions
@@ -111,7 +111,7 @@ class TransactionRepositoryIsar implements TransactionRepository {
           .dateBetween(startOfMonth, endOfMonth)
           .findAll();
       
-      return transactions.fold<double>(0.0, (sum, t) => sum + t.amount);
+      return transactions.fold<double>(0, (sum, t) => sum + t.amount);
     }
     
     final transactions = await isar.transactions
@@ -119,7 +119,7 @@ class TransactionRepositoryIsar implements TransactionRepository {
         .typeEqualTo(type)
         .findAll();
     
-    return transactions.fold<double>(0.0, (sum, t) => sum + t.amount);
+    return transactions.fold<double>(0, (sum, t) => sum + t.amount);
   }
 
   @override
@@ -128,7 +128,7 @@ class TransactionRepositoryIsar implements TransactionRepository {
     
     List<Transaction> transactions;
     if (month != null) {
-      final startOfMonth = DateTime(month.year, month.month, 1);
+      final startOfMonth = DateTime(month.year, month.month);
       final endOfMonth = DateTime(month.year, month.month + 1, 0, 23, 59, 59);
       
       transactions = await isar.transactions
@@ -139,7 +139,7 @@ class TransactionRepositoryIsar implements TransactionRepository {
       transactions = await isar.transactions.where().findAll();
     }
     
-    final Map<String, double> totals = {};
+    final totals = <String, double>{};
     for (final t in transactions) {
       totals[t.category] = (totals[t.category] ?? 0) + t.amount;
     }
@@ -152,16 +152,16 @@ class TransactionRepositoryIsar implements TransactionRepository {
     final isar = await _db;
     
     if (month != null) {
-      final startOfMonth = DateTime(month.year, month.month, 1);
+      final startOfMonth = DateTime(month.year, month.month);
       final endOfMonth = DateTime(month.year, month.month + 1, 0, 23, 59, 59);
       
-      return await isar.transactions
+      return isar.transactions
           .filter()
           .dateBetween(startOfMonth, endOfMonth)
           .count();
     }
     
-    return await isar.transactions.count();
+    return isar.transactions.count();
   }
 
   @override

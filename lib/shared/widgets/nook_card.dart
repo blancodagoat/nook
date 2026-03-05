@@ -1,18 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../core/constants/app_colors.dart';
+import 'package:nook/core/constants/app_colors.dart';
 
 class NookCard extends StatelessWidget {
-  final Widget child;
-  final EdgeInsetsGeometry padding;
-  final double radius;
-  final Color? tint;
-  final bool hasBorder;
-  final VoidCallback? onTap;
-  final Color? backgroundColor;
 
   const NookCard({
-    super.key,
-    required this.child,
+    required this.child, super.key,
     this.padding = const EdgeInsets.all(16),
     this.radius = 16,
     this.tint,
@@ -20,6 +12,13 @@ class NookCard extends StatelessWidget {
     this.onTap,
     this.backgroundColor,
   });
+  final Widget child;
+  final EdgeInsetsGeometry padding;
+  final double radius;
+  final Color? tint;
+  final bool hasBorder;
+  final VoidCallback? onTap;
+  final Color? backgroundColor;
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +29,7 @@ class NookCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: backgroundColor ??
               (tint != null
-                  ? Color.alphaBlend(tint!.withOpacity(0.06), AppColors.surface1)
+                   ? Color.alphaBlend(tint!.withValues(alpha: 0.06), AppColors.surface1)
                   : AppColors.surface1),
           borderRadius: BorderRadius.circular(radius),
           border: hasBorder
@@ -38,7 +37,7 @@ class NookCard extends StatelessWidget {
               : null,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.25),
+              color: Colors.black.withValues(alpha: 0.25),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -57,9 +56,9 @@ class NookCard extends StatelessWidget {
                       BorderRadius.vertical(top: Radius.circular(radius)),
                   gradient: LinearGradient(
                     colors: [
-                      Colors.white.withOpacity(0.0),
-                      Colors.white.withOpacity(0.08),
-                      Colors.white.withOpacity(0.0),
+                      Colors.white.withValues(alpha: 0),
+                      Colors.white.withValues(alpha: 0.08),
+                      Colors.white.withValues(alpha: 0),
                     ],
                   ),
                 ),

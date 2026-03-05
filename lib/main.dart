@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'app.dart';
-import 'core/theme/app_theme.dart';
-import 'data/repositories/repository_provider.dart';
+import 'package:nook/app.dart';
+import 'package:nook/core/theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,8 +15,8 @@ void main() async {
   ]);
 
   runApp(
-    ProviderScope(
-      child: const LedgerApp(),
+    const ProviderScope(
+      child: LedgerApp(),
     ),
   );
 }

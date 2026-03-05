@@ -1,41 +1,31 @@
 import 'package:flutter/material.dart';
-import '../../core/constants/app_colors.dart';
-import '../../core/utils/gradient_utils.dart';
+import 'package:nook/core/constants/app_colors.dart';
 
 class GradientText extends StatelessWidget {
-  final String text;
-  final TextStyle style;
-  final Gradient gradient;
 
   const GradientText({
-    super.key,
-    required this.text,
-    required this.style,
-    required this.gradient,
+    required this.text, required this.style, required this.gradient, super.key,
   });
 
   const GradientText.income({
-    super.key,
-    required this.text,
-    required this.style,
+    required this.text, required this.style, super.key,
   }) : gradient = const LinearGradient(
           colors: [AppColors.incomeA, AppColors.incomeB],
         );
 
   const GradientText.expense({
-    super.key,
-    required this.text,
-    required this.style,
+    required this.text, required this.style, super.key,
   }) : gradient = const LinearGradient(
           colors: [AppColors.expenseA, AppColors.expenseB],
         );
+  final String text;
+  final TextStyle style;
+  final Gradient gradient;
 
   @override
   Widget build(BuildContext context) {
     return ShaderMask(
-      shaderCallback: (bounds) {
-        return gradient.createShader(bounds);
-      },
+      shaderCallback: gradient.createShader,
       child: Text(
         text,
         style: style.copyWith(color: Colors.white),

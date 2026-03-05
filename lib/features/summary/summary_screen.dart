@@ -1,18 +1,18 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:intl/intl.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
-import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_text_styles.dart';
-import '../../core/constants/category_meta.dart';
-import '../../shared/widgets/month_selector.dart';
-import '../../shared/widgets/empty_state_widget.dart';
-import '../../shared/widgets/nook_card.dart';
-import '../../shared/widgets/ambient_background.dart';
-import '../dashboard/dashboard_provider.dart';
-import '../../data/models/transaction.dart';
+import 'package:intl/intl.dart';
+import 'package:nook/core/constants/app_colors.dart';
+import 'package:nook/core/constants/app_text_styles.dart';
+import 'package:nook/core/constants/category_meta.dart';
+import 'package:nook/data/models/transaction.dart';
+import 'package:nook/features/dashboard/dashboard_provider.dart';
+import 'package:nook/shared/widgets/ambient_background.dart';
+import 'package:nook/shared/widgets/empty_state_widget.dart';
+import 'package:nook/shared/widgets/month_selector.dart';
+import 'package:nook/shared/widgets/nook_card.dart';
 
 class SummaryScreen extends ConsumerStatefulWidget {
   const SummaryScreen({super.key});
@@ -52,13 +52,13 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen> {
                     background: Container(color: Colors.transparent),
                   ),
                 ),
-                SliverToBoxAdapter(
+                const SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    padding: EdgeInsets.symmetric(horizontal: 20),
                     child: Column(
                       children: [
-                        const MonthSelector(),
-                        const Gap(24),
+                        MonthSelector(),
+                        Gap(24),
                       ],
                     ),
                   ),
@@ -118,8 +118,6 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen> {
         Expanded(
           child: NookCard(
             tint: AppColors.positive,
-            padding: const EdgeInsets.all(16),
-            radius: 16,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -134,12 +132,12 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen> {
                       ),
                     ),
                     const Gap(6),
-                    Text("Income", style: AppTextStyles.caption),
+                    Text('Income', style: AppTextStyles.caption),
                   ],
                 ),
                 const Gap(8),
                 Text(
-                  NumberFormat.currency(symbol: '\$').format(stats.totalIncome),
+                  NumberFormat.currency(symbol: 'HUF ').format(stats.totalIncome),
                   style: AppTextStyles.cardAmount,
                 ),
               ],
@@ -150,8 +148,6 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen> {
         Expanded(
           child: NookCard(
             tint: AppColors.negative,
-            padding: const EdgeInsets.all(16),
-            radius: 16,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -166,12 +162,12 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen> {
                       ),
                     ),
                     const Gap(6),
-                    Text("Spent", style: AppTextStyles.caption),
+                    Text('Spent', style: AppTextStyles.caption),
                   ],
                 ),
                 const Gap(8),
                 Text(
-                  NumberFormat.currency(symbol: '\$').format(stats.totalExpense),
+                  NumberFormat.currency(symbol: 'HUF ').format(stats.totalExpense),
                   style: AppTextStyles.cardAmount,
                 ),
               ],
@@ -190,10 +186,10 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen> {
             .toList();
 
         if (expenseCategories.isEmpty) {
-          return NookCard(
-            padding: const EdgeInsets.all(20),
+          return const NookCard(
+            padding: EdgeInsets.all(20),
             radius: 24,
-            child: const SizedBox(
+            child: SizedBox(
               height: 180,
               child: Center(
                 child: Text('No expenses this month', style: TextStyle(color: AppColors.textSecondary)),
@@ -202,7 +198,7 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen> {
           );
         }
 
-        final total = expenseCategories.fold(0.0, (sum, e) => sum + e.value);
+        final total = expenseCategories.fold<double>(0, (sum, e) => sum + e.value);
 
         return NookCard(
           padding: const EdgeInsets.all(24),
@@ -243,16 +239,16 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen> {
                       );
                     }).toList(),
                   ),
-                  swapAnimationDuration: 600.ms,
-                  swapAnimationCurve: Curves.easeOutCubic,
+                  duration: 600.ms,
+                  curve: Curves.easeOutCubic,
                 ),
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text("SPENT", style: AppTextStyles.sectionLabel),
+                    Text('SPENT', style: AppTextStyles.sectionLabel),
                     const Gap(4),
                     Text(
-                      NumberFormat.compactCurrency(symbol: '\$').format(total),
+                      NumberFormat.compactCurrency(symbol: 'HUF ').format(total),
                       style: AppTextStyles.cardAmount,
                     ),
                   ],
@@ -262,18 +258,18 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen> {
           ),
         ).animate().fadeIn(duration: 600.ms).scale(begin: const Offset(0.95, 0.95));
       },
-      loading: () => NookCard(
-        padding: const EdgeInsets.all(24),
+      loading: () => const NookCard(
+        padding: EdgeInsets.all(24),
         radius: 28,
-        child: const SizedBox(
+        child: SizedBox(
           height: 220,
           child: Center(child: CircularProgressIndicator(color: AppColors.accent)),
         ),
       ),
-      error: (_, __) => NookCard(
-        padding: const EdgeInsets.all(24),
+      error: (_, __) => const NookCard(
+        padding: EdgeInsets.all(24),
         radius: 28,
-        child: const SizedBox(
+        child: SizedBox(
           height: 220,
           child: Center(child: Text('Error loading chart')),
         ),
@@ -288,7 +284,7 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("Daily Spending", style: AppTextStyles.caption),
+          Text('Daily Spending', style: AppTextStyles.caption),
           const Gap(16),
           SizedBox(
             height: 120,
@@ -303,7 +299,7 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen> {
                         width: 6,
                         borderRadius: BorderRadius.circular(3),
                         gradient: LinearGradient(
-                          colors: [AppColors.accent, AppColors.accent.withOpacity(0.5)],
+                          colors: [AppColors.accent, AppColors.accent.withValues(alpha: 0.5)],
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                         ),
@@ -312,18 +308,17 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen> {
                   );
                 }),
                 gridData: FlGridData(
-                  show: true,
                   drawVerticalLine: false,
-                  getDrawingHorizontalLine: (_) => FlLine(
+                  getDrawingHorizontalLine: (_) => const FlLine(
                     color: AppColors.frostBorder,
                     strokeWidth: 0.5,
                   ),
                 ),
                 borderData: FlBorderData(show: false),
                 titlesData: FlTitlesData(
-                  leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  leftTitles: const AxisTitles(),
+                  rightTitles: const AxisTitles(),
+                  topTitles: const AxisTitles(),
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
@@ -336,7 +331,7 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen> {
                 ),
                 backgroundColor: Colors.transparent,
               ),
-              swapAnimationDuration: 600.ms,
+              duration: 600.ms,
             ),
           ),
         ],
@@ -356,28 +351,26 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen> {
           return const SizedBox.shrink();
         }
 
-        final total = expenseCategories.fold(0.0, (sum, e) => sum + e.value);
+        final total = expenseCategories.fold<double>(0, (sum, e) => sum + e.value);
 
         return Column(
           children: expenseCategories.asMap().entries.map((entry) {
             final index = entry.key;
             final item = entry.value;
             final meta = CategoryData.getMeta(item.key);
-            final percentage = (item.value / total * 100);
+            final percentage = item.value / total * 100;
 
             return Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: NookCard(
                 tint: meta.color,
-                padding: const EdgeInsets.all(16),
-                radius: 16,
                 child: Row(
                   children: [
                     Container(
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: meta.color.withOpacity(0.15),
+                        color: meta.color.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Center(child: Text(meta.emoji, style: const TextStyle(fontSize: 18))),
@@ -393,7 +386,7 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen> {
                                 child: Text(item.key, style: AppTextStyles.txTitle),
                               ),
                               Text(
-                                NumberFormat.currency(symbol: '\$').format(item.value),
+                                NumberFormat.currency(symbol: 'HUF ').format(item.value),
                                 style: AppTextStyles.txAmount,
                               ),
                             ],
@@ -410,7 +403,7 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen> {
                           ),
                           const Gap(4),
                           Text(
-                            "${percentage.toStringAsFixed(1)}% of total",
+                            '${percentage.toStringAsFixed(1)}% of total',
                             style: AppTextStyles.caption,
                           ),
                         ],

@@ -1,7 +1,7 @@
 import 'package:intl/intl.dart';
 
 extension DoubleExtensions on double {
-  String toCurrency({String symbol = '\$', int decimals = 2}) {
+  String toCurrency({String symbol = 'HUF ', int decimals = 2}) {
     final formatter = NumberFormat.currency(
       symbol: symbol,
       decimalDigits: decimals,
@@ -14,7 +14,7 @@ extension DoubleExtensions on double {
     return '$prefix${toCurrency()}';
   }
 
-  String toCompactCurrency({String symbol = '\$'}) {
+  String toCompactCurrency({String symbol = 'HUF '}) {
     if (abs() >= 1000000) {
       return '$symbol${(this / 1000000).toStringAsFixed(1)}M';
     } else if (abs() >= 1000) {
