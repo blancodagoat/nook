@@ -18,11 +18,12 @@ class AppBottomNav extends StatelessWidget {
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
-    return Positioned(
-      bottom: 0,
-      left: 0,
-      right: 0,
-      child: ClipRect(
+    return RepaintBoundary(
+      child: Positioned(
+        bottom: 0,
+        left: 0,
+        right: 0,
+        child: ClipRect(
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
           child: Container(
@@ -64,7 +65,8 @@ class AppBottomNav extends StatelessWidget {
           ),
         ),
       ),
-    );
+    ),
+  );
   }
 }
 
