@@ -89,13 +89,13 @@ class _TabItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () {
-        HapticFeedback.selectionClick();
-        onTap(index);
-      },
-      child: Expanded(
+    return Expanded(
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          HapticFeedback.selectionClick();
+          onTap(index);
+        },
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
