@@ -166,29 +166,6 @@ class TransactionRepositoryIsar implements TransactionRepository {
 
   @override
   Future<void> seedData() async {
-    final isar = await _db;
-    final count = await isar.transactions.count();
-
-    if (count == 0) {
-      final now = DateTime.now();
-      final seedTransactions = [
-        Transaction(title: 'Salary', amount: 5000, type: 'income', category: 'Salary', date: now.subtract(const Duration(days: 2))),
-        Transaction(title: 'Coffee', amount: 4.50, type: 'expense', category: 'Food & Drink', date: now.subtract(const Duration(days: 1))),
-        Transaction(title: 'Groceries', amount: 85.30, type: 'expense', category: 'Food & Drink', date: now.subtract(const Duration(days: 1))),
-        Transaction(title: 'Uber', amount: 25.00, type: 'expense', category: 'Transport', date: now.subtract(const Duration(days: 1))),
-        Transaction(title: 'Freelance Project', amount: 1200, type: 'income', category: 'Freelance', date: now.subtract(const Duration(days: 3))),
-        Transaction(title: 'Movie Tickets', amount: 32.00, type: 'expense', category: 'Entertainment', date: now.subtract(const Duration(days: 4))),
-        Transaction(title: 'Electric Bill', amount: 120.00, type: 'expense', category: 'Housing', date: now.subtract(const Duration(days: 5))),
-        Transaction(title: 'Pharmacy', amount: 45.00, type: 'expense', category: 'Health', date: now.subtract(const Duration(days: 5))),
-        Transaction(title: 'Amazon Purchase', amount: 150.00, type: 'expense', category: 'Shopping', date: now.subtract(const Duration(days: 6))),
-        Transaction(title: 'Dividend', amount: 250.00, type: 'income', category: 'Investment', date: now.subtract(const Duration(days: 7))),
-      ];
-
-      await isar.writeTxn(() async {
-        for (final transaction in seedTransactions) {
-          await isar.transactions.put(transaction);
-        }
-      });
-    }
+    // No seed data - app starts empty
   }
 }
