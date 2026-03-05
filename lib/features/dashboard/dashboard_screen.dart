@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_text_styles.dart';
 import '../../shared/widgets/ambient_background.dart';
-import '../../shared/widgets/month_selector.dart';
 import '../../shared/widgets/empty_state_widget.dart';
 import '../../shared/widgets/nook_card.dart';
 import '../add_transaction/add_transaction_sheet.dart';
@@ -32,13 +31,7 @@ class DashboardScreen extends ConsumerWidget {
                 parent: AlwaysScrollableScrollPhysics(),
               ),
               slivers: [
-                SliverAppBar(
-                  backgroundColor: Colors.transparent,
-                  elevation: 0,
-                  floating: true,
-                  centerTitle: true,
-                  title: const MonthSelector(),
-                ),
+                const SliverToBoxAdapter(child: SizedBox(height: 16)),
                 SliverToBoxAdapter(
                   child: statsAsync.when(
                     data: (stats) {

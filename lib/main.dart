@@ -15,10 +15,6 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  // Clear old mock data once
-  final container = ProviderContainer();
-  await container.read(repositoryProvider).clearAll();
-
   runApp(
     ProviderScope(
       child: const LedgerApp(),

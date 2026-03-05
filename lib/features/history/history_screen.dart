@@ -250,10 +250,10 @@ class _SearchBarDelegate extends SliverPersistentHeaderDelegate {
   }
 
   @override
-  double get maxExtent => 110;
+  double get maxExtent => 120;
 
   @override
-  double get minExtent => 110;
+  double get minExtent => 120;
 
   @override
   bool shouldRebuild(covariant _SearchBarDelegate oldDelegate) {
