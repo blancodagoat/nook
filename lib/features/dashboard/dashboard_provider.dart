@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../data/repositories/repository_provider.dart';
-import '../../data/repositories/transaction_repository_interface.dart';
-import '../../data/models/transaction.dart';
+import 'package:nook/data/models/transaction.dart';
+import 'package:nook/data/repositories/repository_provider.dart';
+import 'package:nook/data/repositories/transaction_repository_interface.dart';
 
 // Use the repository provider to ensure singleton
 final transactionRepositoryProvider = repositoryProvider;
@@ -17,7 +17,7 @@ final dashboardStatsProvider = FutureProvider<DashboardStats>((ref) async {
 
   final totalIncome = await repo.getTotalByType('income', month: selectedMonth);
   final totalExpense = await repo.getTotalByType('expense', month: selectedMonth);
-  final recentTransactions = await repo.getRecent(limit: 10);
+  final recentTransactions = await repo.getRecent();
 
   return DashboardStats(
     totalIncome: totalIncome,
@@ -29,24 +29,24 @@ final dashboardStatsProvider = FutureProvider<DashboardStats>((ref) async {
 final monthlyTransactionsProvider = FutureProvider<List<Transaction>>((ref) async {
   final repo = ref.watch(transactionRepositoryProvider);
   final selectedMonth = ref.watch(selectedMonthProvider);
-  return await repo.getByMonth(selectedMonth);
+  return repo.getByMonth(selectedMonth);
 });
 
 final categoryTotalsProvider = FutureProvider<Map<String, double>>((ref) async {
   final repo = ref.watch(transactionRepositoryProvider);
   final selectedMonth = ref.watch(selectedMonthProvider);
-  return await repo.getCategoryTotals(month: selectedMonth);
+  return repo.getCategoryTotals(month: selectedMonth);
 });
 
 final transactionCountProvider = FutureProvider<int>((ref) async {
   final repo = ref.watch(transactionRepositoryProvider);
   final selectedMonth = ref.watch(selectedMonthProvider);
-  return await repo.getTransactionCount(month: selectedMonth);
+  return repo.getTransactionCount(month: selectedMonth);
 });
 
 final allTransactionsProvider = FutureProvider<List<Transaction>>((ref) async {
   final repo = ref.watch(transactionRepositoryProvider);
-  return await repo.getAll();
+  return repo.getAll();
 });
 
 final searchQueryProvider = StateProvider<String>((ref) => '');
@@ -74,21 +74,22 @@ final filteredTransactionsProvider = FutureProvider<List<Transaction>>((ref) asy
 });
 
 class TransactionNotifier extends StateNotifier<AsyncValue<void>> {
+  TransactionNotifier(this._repository, this._ref) : super(const AsyncValue.data(null));
+
   final TransactionRepository _repository;
   final Ref _ref;
-
-  TransactionNotifier(this._repository, this._ref) : super(const AsyncValue.data(null));
 
   Future<void> addTransaction(Transaction transaction) async {
     state = const AsyncValue.loading();
     try {
       await _repository.insert(transaction);
       state = const AsyncValue.data(null);
-      _ref.invalidate(dashboardStatsProvider);
-      _ref.invalidate(monthlyTransactionsProvider);
-      _ref.invalidate(allTransactionsProvider);
-      _ref.invalidate(categoryTotalsProvider);
-      _ref.invalidate(filteredTransactionsProvider);
+      _ref
+        ..invalidate(dashboardStatsProvider)
+        ..invalidate(monthlyTransactionsProvider)
+        ..invalidate(allTransactionsProvider)
+        ..invalidate(categoryTotalsProvider)
+        ..invalidate(filteredTransactionsProvider);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }
@@ -99,11 +100,12 @@ class TransactionNotifier extends StateNotifier<AsyncValue<void>> {
     try {
       await _repository.update(transaction);
       state = const AsyncValue.data(null);
-      _ref.invalidate(dashboardStatsProvider);
-      _ref.invalidate(monthlyTransactionsProvider);
-      _ref.invalidate(allTransactionsProvider);
-      _ref.invalidate(categoryTotalsProvider);
-      _ref.invalidate(filteredTransactionsProvider);
+      _ref
+        ..invalidate(dashboardStatsProvider)
+        ..invalidate(monthlyTransactionsProvider)
+        ..invalidate(allTransactionsProvider)
+        ..invalidate(categoryTotalsProvider)
+        ..invalidate(filteredTransactionsProvider);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }
@@ -114,11 +116,12 @@ class TransactionNotifier extends StateNotifier<AsyncValue<void>> {
     try {
       await _repository.delete(id);
       state = const AsyncValue.data(null);
-      _ref.invalidate(dashboardStatsProvider);
-      _ref.invalidate(monthlyTransactionsProvider);
-      _ref.invalidate(allTransactionsProvider);
-      _ref.invalidate(categoryTotalsProvider);
-      _ref.invalidate(filteredTransactionsProvider);
+      _ref
+        ..invalidate(dashboardStatsProvider)
+        ..invalidate(monthlyTransactionsProvider)
+        ..invalidate(allTransactionsProvider)
+        ..invalidate(categoryTotalsProvider)
+        ..invalidate(filteredTransactionsProvider);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }
