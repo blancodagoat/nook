@@ -5,6 +5,13 @@ import '../../core/constants/app_colors.dart';
 class AmbientBackground extends StatelessWidget {
   const AmbientBackground({super.key});
 
+import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import '../../core/constants/app_colors.dart';
+
+class AmbientBackground extends StatelessWidget {
+  const AmbientBackground({super.key});
+
   @override
   Widget build(BuildContext context) {
     return RepaintBoundary(
@@ -17,7 +24,7 @@ class AmbientBackground extends StatelessWidget {
               child: Container(
                 width: 380,
                 height: 380,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
@@ -29,17 +36,31 @@ class AmbientBackground extends StatelessWidget {
               )
                   .animate(onPlay: (c) => c.repeat(reverse: true))
                   .moveY(begin: 0, end: 20, duration: 8.seconds, curve: Curves.easeInOut),
+              ),
             ),
-            const Positioned(
+            Positioned(
               bottom: 100,
               right: -40,
-              child: _StaticGlow(),
+              child: Container(
+                width: 220,
+                height: 220,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      AppColors.positive.withOpacity(0.07),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
             ),
           ],
         ),
       ),
     );
   }
+}
 }
 
 class _StaticGlow extends StatelessWidget {
