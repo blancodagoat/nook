@@ -113,6 +113,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                                           content: const Text('Transaction deleted'),
                                           backgroundColor: AppColors.surface1,
                                           behavior: SnackBarBehavior.floating,
+                                          duration: const Duration(seconds: 4),
                                           shape: RoundedRectangleBorder(
                                             borderRadius: BorderRadius.circular(16),
                                             side: const BorderSide(color: AppColors.frostBorder),

@@ -88,6 +88,7 @@ class TransactionNotifier extends StateNotifier<AsyncValue<void>> {
       _ref.invalidate(monthlyTransactionsProvider);
       _ref.invalidate(allTransactionsProvider);
       _ref.invalidate(categoryTotalsProvider);
+      _ref.invalidate(filteredTransactionsProvider);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }
@@ -102,6 +103,7 @@ class TransactionNotifier extends StateNotifier<AsyncValue<void>> {
       _ref.invalidate(monthlyTransactionsProvider);
       _ref.invalidate(allTransactionsProvider);
       _ref.invalidate(categoryTotalsProvider);
+      _ref.invalidate(filteredTransactionsProvider);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }
@@ -116,6 +118,7 @@ class TransactionNotifier extends StateNotifier<AsyncValue<void>> {
       _ref.invalidate(monthlyTransactionsProvider);
       _ref.invalidate(allTransactionsProvider);
       _ref.invalidate(categoryTotalsProvider);
+      _ref.invalidate(filteredTransactionsProvider);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }

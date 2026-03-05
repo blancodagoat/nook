@@ -15,14 +15,8 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  // Create repository and seed data before running app
-  final container = ProviderContainer();
-  final repository = container.read(repositoryProvider);
-  await repository.seedData();
-
   runApp(
-    UncontrolledProviderScope(
-      container: container,
+    ProviderScope(
       child: const LedgerApp(),
     ),
   );
