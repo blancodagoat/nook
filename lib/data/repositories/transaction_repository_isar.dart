@@ -168,4 +168,12 @@ class TransactionRepositoryIsar implements TransactionRepository {
   Future<void> seedData() async {
     // No seed data - app starts empty
   }
+
+  @override
+  Future<void> clearAll() async {
+    final isar = await _db;
+    await isar.writeTxn(() async {
+      await isar.clear();
+    });
+  }
 }

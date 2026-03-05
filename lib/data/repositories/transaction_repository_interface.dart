@@ -14,4 +14,5 @@ abstract class TransactionRepository {
   Future<Map<String, double>> getCategoryTotals({DateTime? month});
   Future<int> getTransactionCount({DateTime? month});
   Future<void> seedData();
+  Future<void> clearAll();
 }
