@@ -1,0 +1,50 @@
+# Nook — Vendetta Plugins
+
+Monorepo for [Vendetta](https://github.com/vendetta-mod/Vendetta) plugins.
+
+Docs: [plugindocs.nexpid.xyz](https://plugindocs.nexpid.xyz)
+
+## Plugins
+
+| Plugin | Install URL | Description |
+|--------|-------------|-------------|
+| Channel Messages Exporter | `https://blancodagoat.github.io/nook/channel-messages-exporter` | Export channel history to JSON, TXT, or HTML |
+| Template | `https://blancodagoat.github.io/nook/template` | Starter plugin |
+
+Paste a plugin URL into **Vendetta → Settings → Plugins → +**.
+
+## Channel Messages Exporter
+
+Export messages from server channels, threads, DMs, and group DMs.
+
+**Entry points**
+- Channel action sheet → **Export messages**
+- Message long-press → **Export from here**
+- Plugin settings → **Export current channel** / **Quick export**
+
+**Formats:** JSON, plain text, self-contained HTML
+
+**Features**
+- Paginated fetch via Discord REST API (cached fallback)
+- Configurable max messages, embeds, attachments, reactions
+- Date range and author filters
+- Share sheet / clipboard output
+- Cancellable fetch progress
+
+## Development
+
+```bash
+pnpm install
+pnpm build
+```
+
+### Local testing
+
+```bash
+http-server dist --port 4040
+# Install: http://192.168.x.x:4040/channel-messages-exporter
+```
+
+See [local plugin development](https://plugindocs.nexpid.xyz/guides/local-plugin-development.md).
+
+Pushes to `main` deploy `dist/` to GitHub Pages automatically.
