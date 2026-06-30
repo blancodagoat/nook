@@ -1,38 +1,48 @@
-# Nook — Vendetta / Revenge Plugins
+# Nook — Kettu / Revenge / Vendetta Plugins
 
-Monorepo for mobile Discord client mod plugins.
+Monorepo for Discord **mobile mod** plugins.
 
-**Primary target:** [Revenge](https://github.com/revenge-mod/revenge-bundle) (Android). Also compatible with legacy [Vendetta](https://github.com/vendetta-mod/Vendetta) loaders that still support `@vendetta/*` plugin URLs.
+**Primary target:** [Kettu](https://codeberg.org/cocobo1/Kettu) (Bunny → Vendetta fork). Also works on [Revenge](https://github.com/revenge-mod/revenge-bundle) and legacy Vendetta loaders.
 
-Docs: [plugindocs.nexpid.xyz](https://plugindocs.nexpid.xyz)
+> **Note:** [kettu.cc/docs](https://kettu.cc/docs) is a unrelated Discord **bot** project. Kettu mod docs live on [Codeberg](https://codeberg.org/cocobo1/Kettu) and [raincord.dev/Kettu](https://raincord.dev/Kettu).
+
+Legacy plugin API docs: [plugindocs.nexpid.xyz](https://plugindocs.nexpid.xyz)
 
 ## Plugins
 
 | Plugin | Install URL | Description |
 |--------|-------------|-------------|
-| Channel Messages Exporter | `https://blancodagoat.github.io/nook/channel-messages-exporter` | Export channel history to JSON, TXT, or HTML |
-| Template | `https://blancodagoat.github.io/nook/template` | Starter plugin |
+| Channel Messages Exporter | `https://blancodagoat.github.io/nook/channel-messages-exporter/` | Export channel history to JSON, TXT, or HTML |
+| Template | `https://blancodagoat.github.io/nook/template/` | Starter plugin |
 
-Paste a plugin URL into **Settings → Plugins → +** (Revenge or Vendetta).
+**Kettu install:** Settings → Plugins → + → paste the URL above (**trailing slash required**).
+
+These use Kettu's **Vendetta-compatible** plugin loader (`onLoad`, `Settings`, `@vendetta/*` APIs).
 
 ## Channel Messages Exporter
 
-Export messages from server channels, threads, DMs, and group DMs.
+### Where to find it in Kettu
 
-**Entry points**
-- Channel action sheet → **Export messages**
-- Message long-press → **Export from here**
-- Plugin settings → **Export current channel** / **Quick export**
+1. **Plugin settings (always works if the plugin loaded)**
+   - Kettu → **Settings → Plugins**
+   - Tap **Channel Messages Exporter**
+   - Use **Export current channel** or **Quick export** (open a channel first)
 
-**Formats:** JSON, plain text, self-contained HTML
+2. **Message menu**
+   - Long-press a message → **Export from here**
 
-**Features**
-- Paginated fetch via Discord REST API (cached fallback)
-- "Export from here" stops pagination at the selected message
-- Configurable max messages, embeds, attachments, reactions
-- Date range and author filters
+3. **Channel menu**
+   - Channel header / channel options sheet → **Export messages**
+
+If menus are missing after a Discord update, use plugin settings or enable **Debug mode** (Advanced) and check logs for `[ChannelExporter] openLazy: ...`.
+
+### Features
+
+- JSON, TXT, HTML export
+- Paginated REST fetch with cache fallback
+- "Export from here" stops at the selected message
 - Share sheet / clipboard output
-- Cancellable fetch progress
+- Filters, max messages, cancellable progress
 
 ## Development
 
@@ -41,19 +51,15 @@ pnpm install
 pnpm build
 ```
 
-### Local testing
+### Local testing on Kettu
 
 ```bash
 npx http-server dist --port 4040
-# Install: http://192.168.x.x:4040/channel-messages-exporter
+# Install: http://192.168.x.x:4040/channel-messages-exporter/
 ```
 
-Use [Revenge Manager](https://github.com/revenge-mod/revenge-manager) or a Vendetta loader on the same Wi‑Fi network. See [local plugin development](https://plugindocs.nexpid.xyz/guides/local-plugin-development.md).
+Same Wi‑Fi as your phone. In Kettu developer settings you can also point at a custom plugin URL.
 
-After changing a plugin, rebuild and reload Discord. Fill in `docs/phase0-findings.md` when testing against a new Discord/Revenge version.
-
-### Manifest authors
-
-Set `authors[].id` in each plugin's `manifest.json` to your Discord user snowflake (currently optional for install, used by plugin browsers).
+Fill in `docs/phase0-findings.md` when testing against a new Kettu/Discord version.
 
 Pushes to `main` deploy `dist/` to GitHub Pages automatically.
