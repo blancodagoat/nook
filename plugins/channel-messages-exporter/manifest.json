@@ -1,0 +1,14 @@
+{
+    "name": "Channel Messages Exporter",
+    "description": "Export channel message history to JSON, TXT, or HTML and share it from your phone.",
+    "authors": [
+        {
+            "name": "blancodagoat",
+            "id": "313770022642122762"
+        }
+    ],
+    "main": "src/index.ts",
+    "vendetta": {
+        "icon": "ic_download_24px"
+    }
+}
