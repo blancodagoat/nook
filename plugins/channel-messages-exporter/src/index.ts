@@ -1,23 +1,22 @@
 import { logger } from "@vendetta";
 
+import { patchChannelMenus } from "./patches/channelMenu";
+import { patchMessageSheet } from "./patches/messageSheet";
 import { Settings } from "./Settings";
-import { runDiscovery } from "./spike/discovery";
+
+const patches: Array<() => void> = [];
 
 export const onLoad = () => {
-    logger.log("[ChannelExporter] Plugin loaded — running Phase 0 discovery");
-    try {
-        runDiscovery();
-    } catch (error) {
-        logger.error(
-            `[ChannelExporter] Initial discovery failed: ${
-                error instanceof Error ? error.message : String(error)
-            }`,
-        );
-    }
+    logger.log("[ChannelExporter] Plugin loaded");
+    patches.push(patchChannelMenus());
+    patches.push(patchMessageSheet());
 };
 
 export const onUnload = () => {
     logger.log("[ChannelExporter] Plugin unloaded");
+    for (const unpatch of patches.splice(0)) {
+        unpatch();
+    }
 };
 
 export { Settings };

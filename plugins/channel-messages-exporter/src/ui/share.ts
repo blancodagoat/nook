@@ -1,57 +1,38 @@
 import { logger } from "@vendetta";
 import { clipboard, ReactNative } from "@vendetta/metro/common";
+import { showToast } from "@vendetta/ui/toasts";
 
-import type { ExportPayload } from "../export/types";
+const MAX_SHARE_BYTES = 5 * 1024 * 1024;
 
-export function buildSpikePayload(channelName = "spike-test"): ExportPayload {
-    return {
-        exportedAt: new Date().toISOString(),
-        channel: {
-            id: "phase0",
-            name: channelName,
-            type: 0,
-        },
-        messageCount: 2,
-        messages: [
-            {
-                id: "1",
-                channelId: "phase0",
-                author: { id: "0", username: "phase0-bot", displayName: "Phase 0" },
-                content: "Share spike message one",
-                timestamp: new Date().toISOString(),
-                type: 0,
-            },
-            {
-                id: "2",
-                channelId: "phase0",
-                author: { id: "0", username: "phase0-bot", displayName: "Phase 0" },
-                content: "Share spike message two",
-                timestamp: new Date().toISOString(),
-                type: 0,
-            },
-        ],
-    };
-}
-
-export async function runShareSpike(channelName?: string): Promise<string> {
-    const payload = buildSpikePayload(channelName);
-    const json = JSON.stringify(payload, null, 2);
+export async function shareExportContent(
+    content: string,
+    filename: string,
+): Promise<"share" | "clipboard"> {
+    if (content.length > MAX_SHARE_BYTES) {
+        throw new Error(
+            `Export is too large (${Math.round(content.length / 1024)} KB). Lower max messages and try again.`,
+        );
+    }
 
     if (ReactNative?.Share?.share) {
         await ReactNative.Share.share({
-            title: "Channel export spike",
-            message: json,
+            title: filename,
+            message: content,
         });
-        logger.log("[ChannelExporter] Share spike opened native share sheet");
-        return "Shared via ReactNative.Share";
+        logger.log(`[ChannelExporter] Shared ${filename}`);
+        return "share";
     }
 
     if (clipboard?.setString) {
-        clipboard.setString(json);
-        logger.log("[ChannelExporter] Share spike copied JSON to clipboard");
-        return "Copied JSON to clipboard (Share API unavailable)";
+        clipboard.setString(content);
+        logger.log(`[ChannelExporter] Copied ${filename} to clipboard`);
+        return "clipboard";
     }
 
-    logger.warn("[ChannelExporter] Share spike failed: no Share or clipboard API");
     throw new Error("Neither Share nor clipboard is available on this build");
+}
+
+export async function shareExportWithToast(content: string, filename: string): Promise<void> {
+    const method = await shareExportContent(content, filename);
+    showToast(method === "share" ? `Shared ${filename}` : `Copied ${filename} to clipboard`);
 }

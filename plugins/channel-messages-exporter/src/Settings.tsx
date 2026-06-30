@@ -1,99 +1,262 @@
 import { useState } from "react";
 
-import { logger } from "@vendetta";
 import { Forms } from "@vendetta/ui/components";
+import { showInputAlert } from "@vendetta/ui/alerts";
 import { showToast } from "@vendetta/ui/toasts";
 
-import { runDiscovery, type SpikeReport } from "./spike/discovery";
-import { runShareSpike } from "./ui/share";
+import type { ExportFormat } from "./export/types";
+import {
+    getChannel,
+    getSelectedChannelId,
+    resolveChannelLabel,
+} from "./metro/stores";
+import { runDiscovery } from "./spike/discovery";
+import {
+    DEFAULT_SETTINGS,
+    getSettings,
+    updateSettings,
+    type PluginSettings,
+} from "./settings/defaults";
+import { openExportSheet } from "./ui/openExport";
+import { shareExportWithToast } from "./ui/share";
+import { buildChannelExport } from "./export/buildExport";
+import { buildExportOptions } from "./export/options";
 
 const { FormSection, FormRow, FormText, FormDivider } = Forms;
 
-function formatModuleLine(name: string, status: SpikeReport["modules"][string]): string {
-    if (!status.found) return `${name}: missing`;
-    return `${name}: ok (${status.keys.length} keys)`;
+const FORMATS: ExportFormat[] = ["json", "txt", "html"];
+
+function cycleFormat(current: ExportFormat): ExportFormat {
+    const index = FORMATS.indexOf(current);
+    return FORMATS[(index + 1) % FORMATS.length];
+}
+
+function toggle(key: keyof PluginSettings): void {
+    const settings = getSettings();
+    const value = settings[key];
+    if (typeof value === "boolean") {
+        updateSettings({ [key]: !value } as Partial<PluginSettings>);
+    }
 }
 
 export const Settings = () => {
-    const [report, setReport] = useState<SpikeReport | null>(null);
-    const [statusText, setStatusText] = useState("Phase 0 spike tools ready.");
+    const [settings, setSettings] = useState(getSettings());
+    const [status, setStatus] = useState("");
 
-    const handleDiscovery = () => {
-        try {
-            const nextReport = runDiscovery();
-            setReport(nextReport);
-            setStatusText(`Discovery ran at ${nextReport.ranAt}`);
-            showToast("Metro discovery complete — check console for details");
-        } catch (error) {
-            const message = error instanceof Error ? error.message : String(error);
-            logger.error(`[ChannelExporter] Discovery failed: ${message}`);
-            setStatusText(`Discovery failed: ${message}`);
-            showToast("Discovery failed");
+    const refresh = () => setSettings(getSettings());
+
+    const exportCurrentChannel = () => {
+        const channelId = getSelectedChannelId();
+        if (!channelId) {
+            showToast("Open a channel first");
+            return;
         }
+
+        const channel = getChannel(channelId);
+        if (!channel) {
+            showToast("Could not resolve current channel");
+            return;
+        }
+
+        openExportSheet({ ...channel, name: resolveChannelLabel(channel) });
     };
 
-    const handleShareSpike = async () => {
+    const quickExportCurrent = async () => {
+        const channelId = getSelectedChannelId();
+        if (!channelId) {
+            showToast("Open a channel first");
+            return;
+        }
+
+        const channel = getChannel(channelId);
+        if (!channel) {
+            showToast("Could not resolve current channel");
+            return;
+        }
+
         try {
-            const result = await runShareSpike();
-            setStatusText(result);
-            showToast(result);
+            setStatus("Exporting current channel...");
+            const current = getSettings();
+            const { content, filename } = await buildChannelExport(channel, buildExportOptions());
+            await shareExportWithToast(content, filename);
+            setStatus(`Exported ${filename}`);
         } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
-            logger.error(`[ChannelExporter] Share spike failed: ${message}`);
-            setStatusText(`Share spike failed: ${message}`);
-            showToast("Share spike failed");
+            setStatus(message);
+            showToast("Export failed");
         }
     };
 
     return (
         <>
-            <FormSection title="Phase 0 Spike">
-                <FormText>
-                    Run these while viewing a channel in Discord. Results are logged to the
-                    Vendetta console and summarized below.
-                </FormText>
-                <FormDivider />
+            <FormSection title="Export">
                 <FormRow
-                    label="Run metro discovery"
-                    sublabel="Probe MessageStore, ChannelStore, fetch APIs"
-                    onPress={handleDiscovery}
+                    label="Export current channel"
+                    sublabel="Open export sheet for the active channel"
+                    onPress={exportCurrentChannel}
                 />
                 <FormRow
-                    label="Test share export"
-                    sublabel="Share a hardcoded JSON payload"
-                    onPress={handleShareSpike}
+                    label="Quick export"
+                    sublabel="Export with saved defaults immediately"
+                    onPress={quickExportCurrent}
                 />
-                <FormDivider />
-                <FormText>{statusText}</FormText>
+                {status ? <FormText>{status}</FormText> : null}
             </FormSection>
 
-            {report && (
-                <FormSection title="Last discovery report">
-                    <FormText>
-                        Channel: {report.messageProbe.channelId ?? "none"}
-                    </FormText>
-                    <FormText>
-                        Cached messages: {report.messageProbe.messageCount ?? "unknown"}
-                    </FormText>
-                    <FormText>
-                        hasMore: {String(report.messageProbe.hasMore)}
-                    </FormText>
-                    <FormText>
-                        Collection keys: {report.messageProbe.keys.join(", ") || "none"}
-                    </FormText>
-                    <FormText>
-                        Sample message keys:{" "}
-                        {report.messageProbe.sampleMessageKeys.join(", ") || "none"}
-                    </FormText>
-                    <FormText>
-                        Fetch candidates: {report.fetchCandidates.join(", ") || "none"}
-                    </FormText>
-                    <FormDivider />
-                    {Object.entries(report.modules).map(([name, status]) => (
-                        <FormText key={name}>{formatModuleLine(name, status)}</FormText>
-                    ))}
-                </FormSection>
-            )}
+            <FormSection title="Defaults">
+                <FormRow
+                    label="Default format"
+                    sublabel={settings.defaultFormat.toUpperCase()}
+                    onPress={() => {
+                        updateSettings({ defaultFormat: cycleFormat(settings.defaultFormat) });
+                        refresh();
+                    }}
+                />
+                <FormRow
+                    label="Max messages"
+                    sublabel={String(settings.maxMessages)}
+                    onPress={() => {
+                        showInputAlert({
+                            title: "Max messages (0 = unlimited)",
+                            initialValue: String(settings.maxMessages),
+                            confirmText: "Save",
+                            onConfirm: (value) => {
+                                const parsed = Number.parseInt(value, 10);
+                                updateSettings({
+                                    maxMessages: Number.isFinite(parsed) ? parsed : DEFAULT_SETTINGS.maxMessages,
+                                });
+                                refresh();
+                            },
+                        });
+                    }}
+                />
+                <FormRow
+                    label="Include embeds"
+                    sublabel={settings.includeEmbeds ? "On" : "Off"}
+                    onPress={() => {
+                        toggle("includeEmbeds");
+                        refresh();
+                    }}
+                />
+                <FormRow
+                    label="Include attachments"
+                    sublabel={settings.includeAttachments ? "On" : "Off"}
+                    onPress={() => {
+                        toggle("includeAttachments");
+                        refresh();
+                    }}
+                />
+                <FormRow
+                    label="Include reactions"
+                    sublabel={settings.includeReactions ? "On" : "Off"}
+                    onPress={() => {
+                        toggle("includeReactions");
+                        refresh();
+                    }}
+                />
+                <FormRow
+                    label="Include avatars"
+                    sublabel={settings.includeAvatars ? "On" : "Off"}
+                    onPress={() => {
+                        toggle("includeAvatars");
+                        refresh();
+                    }}
+                />
+                <FormRow
+                    label="Filename template"
+                    sublabel={settings.filenameTemplate}
+                    onPress={() => {
+                        showInputAlert({
+                            title: "Filename template ({channel} {guild} {date})",
+                            initialValue: settings.filenameTemplate,
+                            confirmText: "Save",
+                            onConfirm: (value) => {
+                                updateSettings({ filenameTemplate: value || DEFAULT_SETTINGS.filenameTemplate });
+                                refresh();
+                            },
+                        });
+                    }}
+                />
+                <FormRow
+                    label="Fetch delay (ms)"
+                    sublabel={String(settings.fetchDelayMs)}
+                    onPress={() => {
+                        showInputAlert({
+                            title: "Fetch delay in ms",
+                            initialValue: String(settings.fetchDelayMs),
+                            confirmText: "Save",
+                            onConfirm: (value) => {
+                                const parsed = Number.parseInt(value, 10);
+                                updateSettings({
+                                    fetchDelayMs: Number.isFinite(parsed)
+                                        ? parsed
+                                        : DEFAULT_SETTINGS.fetchDelayMs,
+                                });
+                                refresh();
+                            },
+                        });
+                    }}
+                />
+            </FormSection>
+
+            <FormSection title="Filters">
+                <FormRow
+                    label="Author ID filter"
+                    sublabel={settings.filterAuthorId || "None"}
+                    onPress={() => {
+                        showInputAlert({
+                            title: "Author user ID (blank = all)",
+                            initialValue: settings.filterAuthorId,
+                            confirmText: "Save",
+                            onConfirm: (value) => {
+                                updateSettings({ filterAuthorId: value.trim() });
+                                refresh();
+                            },
+                        });
+                    }}
+                />
+                <FormRow
+                    label="After date (ISO)"
+                    sublabel={settings.filterAfterDate || "None"}
+                    onPress={() => {
+                        showInputAlert({
+                            title: "After date e.g. 2026-01-01",
+                            initialValue: settings.filterAfterDate,
+                            confirmText: "Save",
+                            onConfirm: (value) => {
+                                updateSettings({ filterAfterDate: value.trim() });
+                                refresh();
+                            },
+                        });
+                    }}
+                />
+                <FormRow
+                    label="Before date (ISO)"
+                    sublabel={settings.filterBeforeDate || "None"}
+                    onPress={() => {
+                        showInputAlert({
+                            title: "Before date e.g. 2026-12-31",
+                            initialValue: settings.filterBeforeDate,
+                            confirmText: "Save",
+                            onConfirm: (value) => {
+                                updateSettings({ filterBeforeDate: value.trim() });
+                                refresh();
+                            },
+                        });
+                    }}
+                />
+            </FormSection>
+
+            <FormSection title="Debug">
+                <FormRow
+                    label="Run metro discovery"
+                    sublabel="Log Discord internals to console"
+                    onPress={() => {
+                        runDiscovery();
+                        showToast("Discovery logged to console");
+                    }}
+                />
+            </FormSection>
         </>
     );
 };
