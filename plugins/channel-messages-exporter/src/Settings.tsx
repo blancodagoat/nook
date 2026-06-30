@@ -1,13 +1,17 @@
-import { React } from "@vendetta/metro/common";
+import { React, ReactNative } from "@vendetta/metro/common";
 import { showInputAlert } from "@vendetta/ui/alerts";
 import { showToast } from "@vendetta/ui/toasts";
 
 import type { ExportFormat } from "./export/types";
+import { buildChannelExport } from "./export/buildExport";
+import { buildExportOptions } from "./export/options";
 import {
     getChannel,
     getSelectedChannelId,
     resolveChannelLabel,
 } from "./metro/stores";
+import { PLUGIN_BUILD } from "./buildInfo";
+import { disableMenuPatches, enableMenuPatches } from "./patches/registry";
 import { runDiscovery } from "./spike/discovery";
 import {
     DEFAULT_SETTINGS,
@@ -15,13 +19,21 @@ import {
     updateSettings,
     type PluginSettings,
 } from "./settings/defaults";
-import { openExportSheet } from "./ui/openExport";
 import { shareExportWithToast } from "./ui/share";
-import { buildChannelExport } from "./export/buildExport";
-import { buildExportOptions } from "./export/options";
-import { getDiscordForms } from "./ui/discordForms";
+
+const { View, Text, Pressable } = ReactNative;
 
 const FORMATS: ExportFormat[] = ["json", "txt", "html"];
+
+const styles = ReactNative.StyleSheet.create({
+    root: { padding: 16, gap: 8 },
+    section: { marginTop: 12, gap: 6 },
+    sectionTitle: { fontSize: 13, fontWeight: "600", opacity: 0.7, marginBottom: 4 },
+    row: { paddingVertical: 12, paddingHorizontal: 4 },
+    rowLabel: { fontSize: 16 },
+    rowSub: { fontSize: 13, opacity: 0.65, marginTop: 2 },
+    status: { fontSize: 13, opacity: 0.8, marginTop: 8 },
+});
 
 function cycleFormat(current: ExportFormat): ExportFormat {
     const index = FORMATS.indexOf(current);
@@ -36,34 +48,38 @@ function toggle(key: keyof PluginSettings): void {
     }
 }
 
+function SettingsRow(props: {
+    label: string;
+    sublabel?: string;
+    onPress: () => void;
+}): React.ReactElement {
+    return React.createElement(
+        Pressable,
+        { onPress: props.onPress, style: styles.row },
+        React.createElement(Text, { style: styles.rowLabel }, props.label),
+        props.sublabel
+            ? React.createElement(Text, { style: styles.rowSub }, props.sublabel)
+            : null,
+    );
+}
+
+function SettingsSection(props: {
+    title: string;
+    children: React.ReactNode;
+}): React.ReactElement {
+    return React.createElement(
+        View,
+        { style: styles.section },
+        React.createElement(Text, { style: styles.sectionTitle }, props.title),
+        props.children,
+    );
+}
+
 export const Settings = () => {
     const [settings, setSettings] = React.useState(getSettings());
     const [status, setStatus] = React.useState("");
-    const forms = getDiscordForms();
-
-    React.useEffect(() => {
-        if (!forms) {
-            showToast("Settings UI unavailable on this Discord build");
-        }
-    }, [forms]);
 
     const refresh = () => setSettings(getSettings());
-
-    const exportCurrentChannel = () => {
-        const channelId = getSelectedChannelId();
-        if (!channelId) {
-            showToast("Open a channel first");
-            return;
-        }
-
-        const channel = getChannel(channelId);
-        if (!channel) {
-            showToast("Could not resolve current channel");
-            return;
-        }
-
-        openExportSheet({ ...channel, name: resolveChannelLabel(channel) });
-    };
 
     const quickExportCurrent = async () => {
         const channelId = getSelectedChannelId();
@@ -79,9 +95,11 @@ export const Settings = () => {
         }
 
         try {
-            setStatus("Exporting current channel...");
-            const current = getSettings();
-            const { content, filename } = await buildChannelExport(channel, buildExportOptions());
+            setStatus("Exporting...");
+            const { content, filename } = await buildChannelExport(
+                { ...channel, name: resolveChannelLabel(channel) },
+                buildExportOptions(),
+            );
             await shareExportWithToast(content, filename);
             setStatus(`Exported ${filename}`);
         } catch (error) {
@@ -91,39 +109,36 @@ export const Settings = () => {
         }
     };
 
-    if (!forms) return null;
-
-    const { FormSection, FormRow, FormText } = forms;
-
-    return (
-        <>
-            <FormSection title="Export">
-                <FormRow
-                    label="Export current channel"
-                    sublabel="Open export sheet for the active channel"
-                    onPress={exportCurrentChannel}
-                />
-                <FormRow
-                    label="Quick export"
-                    sublabel="Export with saved defaults immediately"
-                    onPress={quickExportCurrent}
-                />
-                {status ? <FormText>{status}</FormText> : null}
-            </FormSection>
-
-            <FormSection title="Defaults">
-                <FormRow
-                    label="Default format"
-                    sublabel={settings.defaultFormat.toUpperCase()}
-                    onPress={() => {
+    return React.createElement(
+        View,
+        { style: styles.root },
+        React.createElement(Text, { style: styles.status }, `Build ${PLUGIN_BUILD}`),
+        SettingsSection({
+            title: "Export",
+            children: [
+                SettingsRow({
+                    label: "Quick export",
+                    sublabel: "Export current channel with saved defaults",
+                    onPress: quickExportCurrent,
+                }),
+                status ? React.createElement(Text, { style: styles.status }, status) : null,
+            ],
+        }),
+        SettingsSection({
+            title: "Defaults",
+            children: [
+                SettingsRow({
+                    label: "Default format",
+                    sublabel: settings.defaultFormat.toUpperCase(),
+                    onPress: () => {
                         updateSettings({ defaultFormat: cycleFormat(settings.defaultFormat) });
                         refresh();
-                    }}
-                />
-                <FormRow
-                    label="Max messages"
-                    sublabel={String(settings.maxMessages)}
-                    onPress={() => {
+                    },
+                }),
+                SettingsRow({
+                    label: "Max messages",
+                    sublabel: String(settings.maxMessages),
+                    onPress: () => {
                         showInputAlert({
                             title: "Max messages (0 = unlimited)",
                             initialValue: String(settings.maxMessages),
@@ -131,153 +146,73 @@ export const Settings = () => {
                             onConfirm: (value) => {
                                 const parsed = Number.parseInt(value, 10);
                                 updateSettings({
-                                    maxMessages: Number.isFinite(parsed) ? parsed : DEFAULT_SETTINGS.maxMessages,
+                                    maxMessages: Number.isFinite(parsed)
+                                        ? parsed
+                                        : DEFAULT_SETTINGS.maxMessages,
                                 });
                                 refresh();
                             },
                         });
-                    }}
-                />
-                <FormRow
-                    label="Include embeds"
-                    sublabel={settings.includeEmbeds ? "On" : "Off"}
-                    onPress={() => {
+                    },
+                }),
+                SettingsRow({
+                    label: "Include embeds",
+                    sublabel: settings.includeEmbeds ? "On" : "Off",
+                    onPress: () => {
                         toggle("includeEmbeds");
                         refresh();
-                    }}
-                />
-                <FormRow
-                    label="Include attachments"
-                    sublabel={settings.includeAttachments ? "On" : "Off"}
-                    onPress={() => {
+                    },
+                }),
+                SettingsRow({
+                    label: "Include attachments",
+                    sublabel: settings.includeAttachments ? "On" : "Off",
+                    onPress: () => {
                         toggle("includeAttachments");
                         refresh();
-                    }}
-                />
-                <FormRow
-                    label="Include reactions"
-                    sublabel={settings.includeReactions ? "On" : "Off"}
-                    onPress={() => {
-                        toggle("includeReactions");
+                    },
+                }),
+            ],
+        }),
+        SettingsSection({
+            title: "Advanced",
+            children: [
+                SettingsRow({
+                    label: "Menu shortcuts (experimental)",
+                    sublabel: settings.menuPatches
+                        ? "On — long-press / channel menus"
+                        : "Off — safest mode",
+                    onPress: () => {
+                        const next = !settings.menuPatches;
+                        updateSettings({ menuPatches: next });
+                        if (next) {
+                            enableMenuPatches();
+                            showToast("Menu patches enabled");
+                        } else {
+                            disableMenuPatches();
+                            showToast("Menu patches disabled");
+                        }
                         refresh();
-                    }}
-                />
-                <FormRow
-                    label="Include avatars"
-                    sublabel={settings.includeAvatars ? "On" : "Off"}
-                    onPress={() => {
-                        toggle("includeAvatars");
-                        refresh();
-                    }}
-                />
-                <FormRow
-                    label="Filename template"
-                    sublabel={settings.filenameTemplate}
-                    onPress={() => {
-                        showInputAlert({
-                            title: "Filename template ({channel} {guild} {date})",
-                            initialValue: settings.filenameTemplate,
-                            confirmText: "Save",
-                            onConfirm: (value) => {
-                                updateSettings({ filenameTemplate: value || DEFAULT_SETTINGS.filenameTemplate });
-                                refresh();
-                            },
-                        });
-                    }}
-                />
-                <FormRow
-                    label="Fetch delay (ms)"
-                    sublabel={String(settings.fetchDelayMs)}
-                    onPress={() => {
-                        showInputAlert({
-                            title: "Fetch delay in ms",
-                            initialValue: String(settings.fetchDelayMs),
-                            confirmText: "Save",
-                            onConfirm: (value) => {
-                                const parsed = Number.parseInt(value, 10);
-                                updateSettings({
-                                    fetchDelayMs: Number.isFinite(parsed)
-                                        ? parsed
-                                        : DEFAULT_SETTINGS.fetchDelayMs,
-                                });
-                                refresh();
-                            },
-                        });
-                    }}
-                />
-            </FormSection>
-
-            <FormSection title="Filters">
-                <FormRow
-                    label="Author ID filter"
-                    sublabel={settings.filterAuthorId || "None"}
-                    onPress={() => {
-                        showInputAlert({
-                            title: "Author user ID (blank = all)",
-                            initialValue: settings.filterAuthorId,
-                            confirmText: "Save",
-                            onConfirm: (value) => {
-                                updateSettings({ filterAuthorId: value.trim() });
-                                refresh();
-                            },
-                        });
-                    }}
-                />
-                <FormRow
-                    label="After date (ISO)"
-                    sublabel={settings.filterAfterDate || "None"}
-                    onPress={() => {
-                        showInputAlert({
-                            title: "After date e.g. 2026-01-01",
-                            initialValue: settings.filterAfterDate,
-                            confirmText: "Save",
-                            onConfirm: (value) => {
-                                updateSettings({ filterAfterDate: value.trim() });
-                                refresh();
-                            },
-                        });
-                    }}
-                />
-                <FormRow
-                    label="Before date (ISO)"
-                    sublabel={settings.filterBeforeDate || "None"}
-                    onPress={() => {
-                        showInputAlert({
-                            title: "Before date e.g. 2026-12-31",
-                            initialValue: settings.filterBeforeDate,
-                            confirmText: "Save",
-                            onConfirm: (value) => {
-                                updateSettings({ filterBeforeDate: value.trim() });
-                                refresh();
-                            },
-                        });
-                    }}
-                />
-            </FormSection>
-
-            {settings.debugMode && (
-                <FormSection title="Debug">
-                    <FormRow
-                        label="Run metro discovery"
-                        sublabel="Log Discord internals to console"
-                        onPress={() => {
-                            runDiscovery();
-                            showToast("Discovery logged to console");
-                        }}
-                    />
-                </FormSection>
-            )}
-
-            <FormSection title="Advanced">
-                <FormRow
-                    label="Debug mode"
-                    sublabel={settings.debugMode ? "On" : "Off"}
-                    onPress={() => {
+                    },
+                }),
+                SettingsRow({
+                    label: "Debug mode",
+                    sublabel: settings.debugMode ? "On" : "Off",
+                    onPress: () => {
                         toggle("debugMode");
                         refresh();
-                    }}
-                />
-            </FormSection>
-        </>
+                    },
+                }),
+                settings.debugMode
+                    ? SettingsRow({
+                          label: "Run metro discovery",
+                          sublabel: "Logs Discord internals",
+                          onPress: () => {
+                              runDiscovery();
+                              showToast("Discovery logged to console");
+                          },
+                      })
+                    : null,
+            ],
+        }),
     );
 };

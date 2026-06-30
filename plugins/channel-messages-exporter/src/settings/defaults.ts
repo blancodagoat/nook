@@ -15,6 +15,7 @@ export interface PluginSettings {
     filterAfterDate: string;
     filterBeforeDate: string;
     debugMode: boolean;
+    menuPatches: boolean;
 }
 
 export const DEFAULT_SETTINGS: PluginSettings = {
@@ -30,6 +31,7 @@ export const DEFAULT_SETTINGS: PluginSettings = {
     filterAfterDate: "",
     filterBeforeDate: "",
     debugMode: false,
+    menuPatches: false,
 };
 
 export function getSettings(): PluginSettings {

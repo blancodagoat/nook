@@ -1,9 +1,10 @@
-import { React } from "@vendetta/metro/common";
-import { Forms } from "@vendetta/ui/components";
-const { FormText } = Forms;
+import { React, ReactNative } from "@vendetta/metro/common";
 
-export default () => (
-    <FormText>
-        Hello, world!
-    </FormText>
-)
+const { View, Text } = ReactNative;
+
+export default () =>
+    React.createElement(
+        View,
+        { style: { padding: 16 } },
+        React.createElement(Text, null, "Hello, world!"),
+    );
