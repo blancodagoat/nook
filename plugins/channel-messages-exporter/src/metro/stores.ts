@@ -1,68 +1,7 @@
-import { logger } from "@vendetta";
 import { channels } from "@vendetta/metro/common";
 import { find, findByProps } from "@vendetta/metro";
 
-export interface MetroModuleStatus {
-    found: boolean;
-    keys: string[];
-    error?: string;
-}
-
-function probe(label: string, resolver: () => unknown): MetroModuleStatus {
-    try {
-        const mod = resolver();
-        if (!mod || typeof mod !== "object") {
-            return { found: false, keys: [], error: `${label}: resolver returned ${mod}` };
-        }
-
-        return {
-            found: true,
-            keys: Object.keys(mod as object).sort(),
-        };
-    } catch (error) {
-        return {
-            found: false,
-            keys: [],
-            error: `${label}: ${error instanceof Error ? error.message : String(error)}`,
-        };
-    }
-}
-
-export const metroModules = {
-    messageStore: () =>
-        probe("MessageStore", () => findByProps("getMessages", "getMessage")),
-
-    channelStore: () =>
-        probe("ChannelStore", () => findByProps("getChannel", "hasChannel")),
-
-    userStore: () =>
-        probe("UserStore", () => findByProps("getUser", "getCurrentUser")),
-
-    guildStore: () =>
-        probe("GuildStore", () => findByProps("getGuild", "getGuilds")),
-
-    selectedChannel: () =>
-        probe("SelectedChannelStore", () => findByProps("getChannelId", "getLastSelectedChannelId")),
-
-    messageFetcher: () =>
-        probe("MessageFetcher", () =>
-            find((module) => {
-                if (!module || typeof module !== "object") return false;
-                const candidate = module as Record<string, unknown>;
-                return (
-                    typeof candidate.fetchMessages === "function" ||
-                    typeof candidate.loadMessages === "function" ||
-                    typeof candidate.getMessages === "function"
-                );
-            }),
-        ),
-
-    lazyActionSheet: () =>
-        probe("LazyActionSheet", () => findByProps("openLazy", "hideActionSheet")),
-
-    channelsCommon: () =>
-        probe("channels", () => channels),
-};
+import type { RawChannel } from "../export/types";
 
 export function getMessageStore(): Record<string, unknown> | null {
     try {
@@ -80,6 +19,71 @@ export function getChannelStore(): Record<string, unknown> | null {
     }
 }
 
+export function getUserStore(): Record<string, unknown> | null {
+    try {
+        return findByProps("getUser", "getCurrentUser") as Record<string, unknown>;
+    } catch {
+        return null;
+    }
+}
+
+export function getGuildStore(): Record<string, unknown> | null {
+    try {
+        return findByProps("getGuild", "getGuilds") as Record<string, unknown>;
+    } catch {
+        return null;
+    }
+}
+
+export function getLazyActionSheet(): {
+    openLazy?: (...args: unknown[]) => void;
+    hideActionSheet?: () => void;
+} | null {
+    try {
+        return findByProps("openLazy", "hideActionSheet") as {
+            openLazy?: (...args: unknown[]) => void;
+            hideActionSheet?: () => void;
+        };
+    } catch {
+        return null;
+    }
+}
+
+export function getRestApi(): {
+    get?: (options: {
+        url: string;
+        query?: Record<string, string | number>;
+        retries?: number;
+    }) => Promise<{ body?: unknown } | null>;
+} | null {
+    try {
+        return findByProps("get", "post", "patch", "put", "delete") as {
+            get?: (options: {
+                url: string;
+                query?: Record<string, string | number>;
+                retries?: number;
+            }) => Promise<{ body?: unknown } | null>;
+        };
+    } catch {
+        return null;
+    }
+}
+
+export function getMessageFetcher(): Record<string, unknown> | null {
+    try {
+        return find((module) => {
+            if (!module || typeof module !== "object") return false;
+            const candidate = module as Record<string, unknown>;
+            return (
+                typeof candidate.fetchMessages === "function" ||
+                typeof candidate.loadMessages === "function"
+            );
+        }) as Record<string, unknown> | null;
+    } catch {
+        return null;
+    }
+}
+
 export function getSelectedChannelId(): string | null {
     try {
         const selected = findByProps("getChannelId", "getLastSelectedChannelId") as {
@@ -89,7 +93,7 @@ export function getSelectedChannelId(): string | null {
         const fromStore = selected.getChannelId?.() ?? selected.getLastSelectedChannelId?.();
         if (fromStore) return fromStore;
     } catch {
-        // fall through to channels helper
+        // fall through
     }
 
     try {
@@ -98,4 +102,39 @@ export function getSelectedChannelId(): string | null {
     } catch {
         return null;
     }
+}
+
+export function getChannel(channelId: string): RawChannel | null {
+    const store = getChannelStore();
+    if (!store?.getChannel || typeof store.getChannel !== "function") return null;
+
+    try {
+        return (store.getChannel as (id: string) => RawChannel | null)(channelId);
+    } catch {
+        return null;
+    }
+}
+
+export function getGuildName(guildId?: string): string | undefined {
+    if (!guildId) return undefined;
+    const store = getGuildStore();
+    if (!store?.getGuild || typeof store.getGuild !== "function") return undefined;
+
+    try {
+        const guild = (store.getGuild as (id: string) => { name?: string } | null)(guildId);
+        return guild?.name;
+    } catch {
+        return undefined;
+    }
+}
+
+export function resolveChannelLabel(channel: RawChannel | null): string {
+    if (!channel) return "unknown-channel";
+    if (channel.name) return channel.name;
+
+    if (channel.recipients?.length) {
+        return channel.recipients.map((user) => user.username ?? user.id).join("-");
+    }
+
+    return `channel-${channel.id}`;
 }

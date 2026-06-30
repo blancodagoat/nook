@@ -1,17 +1,35 @@
 # Nook — Vendetta Plugins
 
-Monorepo for [Vendetta](https://github.com/vendetta-mod/Vendetta) plugins, based on the [official plugin template](https://github.com/vendetta-mod/plugin-template).
+Monorepo for [Vendetta](https://github.com/vendetta-mod/Vendetta) plugins.
 
 Docs: [plugindocs.nexpid.xyz](https://plugindocs.nexpid.xyz)
 
 ## Plugins
 
-| Plugin | Install URL |
-|--------|-------------|
-| Channel Messages Exporter | `https://blancodagoat.github.io/nook/channel-messages-exporter` |
-| Template | `https://blancodagoat.github.io/nook/template` |
+| Plugin | Install URL | Description |
+|--------|-------------|-------------|
+| Channel Messages Exporter | `https://blancodagoat.github.io/nook/channel-messages-exporter` | Export channel history to JSON, TXT, or HTML |
+| Template | `https://blancodagoat.github.io/nook/template` | Starter plugin |
 
 Paste a plugin URL into **Vendetta → Settings → Plugins → +**.
+
+## Channel Messages Exporter
+
+Export messages from server channels, threads, DMs, and group DMs.
+
+**Entry points**
+- Channel action sheet → **Export messages**
+- Message long-press → **Export from here**
+- Plugin settings → **Export current channel** / **Quick export**
+
+**Formats:** JSON, plain text, self-contained HTML
+
+**Features**
+- Paginated fetch via Discord REST API (cached fallback)
+- Configurable max messages, embeds, attachments, reactions
+- Date range and author filters
+- Share sheet / clipboard output
+- Cancellable fetch progress
 
 ## Development
 
@@ -20,34 +38,13 @@ pnpm install
 pnpm build
 ```
 
-### Local testing (phone on same Wi‑Fi)
-
-Per [plugindocs local dev guide](https://plugindocs.nexpid.xyz/guides/local-plugin-development.md):
+### Local testing
 
 ```bash
-# Terminal 1 — serve built plugins
 http-server dist --port 4040
-
-# Terminal 2 — rebuild after changes
-pnpm build
+# Install: http://192.168.x.x:4040/channel-messages-exporter
 ```
 
-Install from your LAN IP, e.g. `http://192.168.x.x:4040/channel-messages-exporter`.
+See [local plugin development](https://plugindocs.nexpid.xyz/guides/local-plugin-development.md).
 
-### GitHub Pages deploy
-
-Pushes to `main` build and deploy `dist/` via GitHub Actions. Enable Pages with the `gh-pages` branch (see [setting up guide](https://plugindocs.nexpid.xyz/guides/setting-up.md)).
-
-## Plugin entrypoint
-
-Follow the [plugin entrypoint docs](https://plugindocs.nexpid.xyz/guides/plugin-entrypoint.md):
-
-```ts
-export const onLoad = () => { /* ... */ };
-export const onUnload = () => { /* ... */ };
-export const Settings = () => <Text>Hello</Text>;
-```
-
-## Channel Messages Exporter
-
-Phase 0 spike plugin — probes Discord metro modules and tests share export. See `docs/channel-messages-exporter-plan.md` and `docs/phase0-findings.md`.
+Pushes to `main` deploy `dist/` to GitHub Pages automatically.

@@ -1,12 +1,17 @@
 import { logger } from "@vendetta";
 import { clipboard, ReactNative } from "@vendetta/metro/common";
 
+import { extractCachedMessages } from "../export/messageUtils";
 import {
+    getChannel,
     getChannelStore,
+    getGuildStore,
+    getLazyActionSheet,
+    getMessageFetcher,
     getMessageStore,
+    getRestApi,
     getSelectedChannelId,
-    metroModules,
-    type MetroModuleStatus,
+    getUserStore,
 } from "../metro/stores";
 
 export interface MessageCollectionProbe {
@@ -21,15 +26,9 @@ export interface MessageCollectionProbe {
 
 export interface SpikeReport {
     ranAt: string;
-    modules: Record<string, MetroModuleStatus>;
+    modules: Record<string, boolean>;
     messageProbe: MessageCollectionProbe;
     fetchCandidates: string[];
-}
-
-function describeValue(value: unknown): string {
-    if (value === null) return "null";
-    if (Array.isArray(value)) return `array(${value.length})`;
-    return typeof value;
 }
 
 function probeMessageCollection(channelId: string | null): MessageCollectionProbe {
@@ -45,131 +44,54 @@ function probeMessageCollection(channelId: string | null): MessageCollectionProb
         };
     }
 
-    const messageStore = getMessageStore();
-    if (!messageStore?.getMessages || typeof messageStore.getMessages !== "function") {
-        return {
-            channelId,
-            collectionType: "unavailable",
-            keys: messageStore ? Object.keys(messageStore) : [],
-            sampleMessageKeys: [],
-            messageCount: null,
-            hasMore: null,
-            error: "MessageStore.getMessages unavailable",
-        };
-    }
+    const cached = extractCachedMessages(channelId);
+    const firstMessage =
+        cached.length > 0 && cached[0] && typeof cached[0] === "object"
+            ? Object.keys(cached[0] as object).sort()
+            : [];
 
-    try {
-        const collection = (messageStore.getMessages as (id: string) => unknown)(channelId);
-        if (!collection || typeof collection !== "object") {
-            return {
-                channelId,
-                collectionType: describeValue(collection),
-                keys: [],
-                sampleMessageKeys: [],
-                messageCount: null,
-                hasMore: null,
-                error: `getMessages returned ${describeValue(collection)}`,
-            };
-        }
-
-        const record = collection as Record<string, unknown>;
-        const keys = Object.keys(record).sort();
-
-        const arrayCandidate =
-            (Array.isArray(record._array) && record._array) ||
-            (Array.isArray(record.messages) && record.messages) ||
-            (Array.isArray(record) && record) ||
-            null;
-
-        const firstMessage =
-            arrayCandidate && arrayCandidate.length > 0
-                ? (arrayCandidate[0] as Record<string, unknown>)
-                : null;
-
-        const hasMore =
-            typeof record.hasMoreBefore === "boolean"
-                ? record.hasMoreBefore
-                : typeof record.hasMore === "boolean"
-                  ? record.hasMore
-                  : null;
-
-        return {
-            channelId,
-            collectionType: arrayCandidate ? "array-backed" : "object",
-            keys,
-            sampleMessageKeys: firstMessage ? Object.keys(firstMessage).sort() : [],
-            messageCount: arrayCandidate ? arrayCandidate.length : null,
-            hasMore,
-        };
-    } catch (error) {
-        return {
-            channelId,
-            collectionType: "error",
-            keys: [],
-            sampleMessageKeys: [],
-            messageCount: null,
-            hasMore: null,
-            error: error instanceof Error ? error.message : String(error),
-        };
-    }
-}
-
-function probeFetchCandidates(): string[] {
-    const fetcher = metroModules.messageFetcher();
-    if (!fetcher.found) return [];
-
-    return fetcher.keys.filter((key) => /fetch|load|get/i.test(key));
-}
-
-function probeShareApis(): Record<string, MetroModuleStatus> {
     return {
-        reactNativeShare: {
-            found: Boolean(ReactNative?.Share?.share),
-            keys: ReactNative?.Share ? Object.keys(ReactNative.Share).sort() : [],
-        },
-        clipboard: {
-            found: Boolean(clipboard?.setString),
-            keys: clipboard ? Object.keys(clipboard as object).sort() : [],
-        },
+        channelId,
+        collectionType: cached.length > 0 ? "array-backed" : "empty",
+        keys: cached.length > 0 ? ["cache"] : [],
+        sampleMessageKeys: firstMessage,
+        messageCount: cached.length,
+        hasMore: null,
     };
 }
 
 export function runDiscovery(): SpikeReport {
+    const fetcher = getMessageFetcher();
     const modules = {
-        messageStore: metroModules.messageStore(),
-        channelStore: metroModules.channelStore(),
-        userStore: metroModules.userStore(),
-        guildStore: metroModules.guildStore(),
-        selectedChannel: metroModules.selectedChannel(),
-        messageFetcher: metroModules.messageFetcher(),
-        lazyActionSheet: metroModules.lazyActionSheet(),
-        channelsCommon: metroModules.channelsCommon(),
-        ...probeShareApis(),
+        messageStore: Boolean(getMessageStore()),
+        channelStore: Boolean(getChannelStore()),
+        userStore: Boolean(getUserStore()),
+        guildStore: Boolean(getGuildStore()),
+        restApi: Boolean(getRestApi()),
+        messageFetcher: Boolean(fetcher),
+        lazyActionSheet: Boolean(getLazyActionSheet()),
+        reactNativeShare: Boolean(ReactNative?.Share?.share),
+        clipboard: Boolean(clipboard?.setString),
     };
 
     const channelId = getSelectedChannelId();
-    const channelStore = getChannelStore();
-    const channel =
-        channelId && channelStore?.getChannel
-            ? (channelStore.getChannel as (id: string) => { name?: string } | null)(channelId)
-            : null;
+    const channel = channelId ? getChannel(channelId) : null;
+    const fetchCandidates = fetcher ? Object.keys(fetcher).filter((key) => /fetch|load|get/i.test(key)) : [];
 
     const report: SpikeReport = {
         ranAt: new Date().toISOString(),
         modules,
         messageProbe: probeMessageCollection(channelId),
-        fetchCandidates: probeFetchCandidates(),
+        fetchCandidates,
     };
 
-    logger.log("[ChannelExporter] Phase 0 discovery complete");
+    logger.log("[ChannelExporter] Discovery complete");
     logger.log(`[ChannelExporter] Channel: ${channel?.name ?? "unknown"} (${channelId ?? "none"})`);
     logger.log(`[ChannelExporter] Cached messages: ${report.messageProbe.messageCount ?? "?"}`);
-    logger.log(`[ChannelExporter] Fetch candidates: ${report.fetchCandidates.join(", ") || "none"}`);
+    logger.log(`[ChannelExporter] Fetch candidates: ${fetchCandidates.join(", ") || "none"}`);
 
-    for (const [name, status] of Object.entries(modules)) {
-        if (!status.found) {
-            logger.warn(`[ChannelExporter] Missing module ${name}: ${status.error ?? "not found"}`);
-        }
+    for (const [name, found] of Object.entries(modules)) {
+        if (!found) logger.warn(`[ChannelExporter] Missing module: ${name}`);
     }
 
     return report;
