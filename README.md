@@ -1,6 +1,8 @@
-# Nook — Vendetta Plugins
+# Nook — Vendetta / Revenge Plugins
 
-Monorepo for [Vendetta](https://github.com/vendetta-mod/Vendetta) plugins.
+Monorepo for mobile Discord client mod plugins.
+
+**Primary target:** [Revenge](https://github.com/revenge-mod/revenge-bundle) (Android). Also compatible with legacy [Vendetta](https://github.com/vendetta-mod/Vendetta) loaders that still support `@vendetta/*` plugin URLs.
 
 Docs: [plugindocs.nexpid.xyz](https://plugindocs.nexpid.xyz)
 
@@ -11,7 +13,7 @@ Docs: [plugindocs.nexpid.xyz](https://plugindocs.nexpid.xyz)
 | Channel Messages Exporter | `https://blancodagoat.github.io/nook/channel-messages-exporter` | Export channel history to JSON, TXT, or HTML |
 | Template | `https://blancodagoat.github.io/nook/template` | Starter plugin |
 
-Paste a plugin URL into **Vendetta → Settings → Plugins → +**.
+Paste a plugin URL into **Settings → Plugins → +** (Revenge or Vendetta).
 
 ## Channel Messages Exporter
 
@@ -26,6 +28,7 @@ Export messages from server channels, threads, DMs, and group DMs.
 
 **Features**
 - Paginated fetch via Discord REST API (cached fallback)
+- "Export from here" stops pagination at the selected message
 - Configurable max messages, embeds, attachments, reactions
 - Date range and author filters
 - Share sheet / clipboard output
@@ -41,10 +44,16 @@ pnpm build
 ### Local testing
 
 ```bash
-http-server dist --port 4040
+npx http-server dist --port 4040
 # Install: http://192.168.x.x:4040/channel-messages-exporter
 ```
 
-See [local plugin development](https://plugindocs.nexpid.xyz/guides/local-plugin-development.md).
+Use [Revenge Manager](https://github.com/revenge-mod/revenge-manager) or a Vendetta loader on the same Wi‑Fi network. See [local plugin development](https://plugindocs.nexpid.xyz/guides/local-plugin-development.md).
+
+After changing a plugin, rebuild and reload Discord. Fill in `docs/phase0-findings.md` when testing against a new Discord/Revenge version.
+
+### Manifest authors
+
+Set `authors[].id` in each plugin's `manifest.json` to your Discord user snowflake (currently optional for install, used by plugin browsers).
 
 Pushes to `main` deploy `dist/` to GitHub Pages automatically.
