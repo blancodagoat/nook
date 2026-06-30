@@ -2,6 +2,7 @@ import { useState } from "react";
 
 import { logger } from "@vendetta";
 import { Forms } from "@vendetta/ui/components";
+import { showToast } from "@vendetta/ui/toasts";
 
 import { runDiscovery, type SpikeReport } from "./spike/discovery";
 import { runShareSpike } from "./ui/share";
@@ -13,7 +14,7 @@ function formatModuleLine(name: string, status: SpikeReport["modules"][string]):
     return `${name}: ok (${status.keys.length} keys)`;
 }
 
-export default () => {
+export const Settings = () => {
     const [report, setReport] = useState<SpikeReport | null>(null);
     const [statusText, setStatusText] = useState("Phase 0 spike tools ready.");
 
@@ -22,10 +23,12 @@ export default () => {
             const nextReport = runDiscovery();
             setReport(nextReport);
             setStatusText(`Discovery ran at ${nextReport.ranAt}`);
+            showToast("Metro discovery complete — check console for details");
         } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
             logger.error(`[ChannelExporter] Discovery failed: ${message}`);
             setStatusText(`Discovery failed: ${message}`);
+            showToast("Discovery failed");
         }
     };
 
@@ -33,10 +36,12 @@ export default () => {
         try {
             const result = await runShareSpike();
             setStatusText(result);
+            showToast(result);
         } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
             logger.error(`[ChannelExporter] Share spike failed: ${message}`);
             setStatusText(`Share spike failed: ${message}`);
+            showToast("Share spike failed");
         }
     };
 

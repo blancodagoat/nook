@@ -2,6 +2,15 @@
 
 Fill this in after running the spike tools on a Vendetta device.
 
+Reference: [Vendetta Plugin Docs](https://plugindocs.nexpid.xyz)
+
+## Local testing setup
+
+1. `pnpm install && pnpm build`
+2. `http-server dist --port 4040` ([local dev guide](https://plugindocs.nexpid.xyz/guides/local-plugin-development.md))
+3. Install `http://192.168.x.x:4040/channel-messages-exporter` on phone (same Wi‑Fi)
+4. Open a channel, then plugin settings → run both spike buttons
+
 ## Test environment
 
 - Discord app version:
@@ -19,8 +28,8 @@ Fill this in after running the spike tools on a Vendetta device.
 | GuildStore | | |
 | SelectedChannelStore | | |
 | Message fetch API | | |
-| ReactNative.Share | | |
-| ReactNative.Clipboard | | |
+| ReactNative.Share | | via `@vendetta/metro/common` |
+| clipboard | | via `@vendetta/metro/common` |
 
 ## Message collection shape
 

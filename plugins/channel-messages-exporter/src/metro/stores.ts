@@ -1,3 +1,5 @@
+import { logger } from "@vendetta";
+import { channels } from "@vendetta/metro/common";
 import { find, findByProps } from "@vendetta/metro";
 
 export interface MetroModuleStatus {
@@ -58,14 +60,8 @@ export const metroModules = {
     lazyActionSheet: () =>
         probe("LazyActionSheet", () => findByProps("openLazy", "hideActionSheet")),
 
-    reactNative: () =>
-        probe("ReactNative", () => {
-            // eslint-disable-next-line @typescript-eslint/no-require-imports
-            const common = require("@vendetta/metro/common") as {
-                ReactNative?: { Share?: unknown; Clipboard?: unknown };
-            };
-            return common.ReactNative;
-        }),
+    channelsCommon: () =>
+        probe("channels", () => channels),
 };
 
 export function getMessageStore(): Record<string, unknown> | null {
@@ -90,16 +86,16 @@ export function getSelectedChannelId(): string | null {
             getChannelId?: () => string;
             getLastSelectedChannelId?: () => string;
         };
-        return selected.getChannelId?.() ?? selected.getLastSelectedChannelId?.() ?? null;
+        const fromStore = selected.getChannelId?.() ?? selected.getLastSelectedChannelId?.();
+        if (fromStore) return fromStore;
     } catch {
-        try {
-            // eslint-disable-next-line @typescript-eslint/no-require-imports
-            const { channels } = require("@vendetta/metro/common") as {
-                channels?: { getChannelId?: () => string };
-            };
-            return channels?.getChannelId?.() ?? null;
-        } catch {
-            return null;
-        }
+        // fall through to channels helper
+    }
+
+    try {
+        const channelApi = channels as { getChannelId?: () => string };
+        return channelApi.getChannelId?.() ?? null;
+    } catch {
+        return null;
     }
 }

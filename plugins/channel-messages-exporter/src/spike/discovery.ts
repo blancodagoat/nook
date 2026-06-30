@@ -1,4 +1,5 @@
 import { logger } from "@vendetta";
+import { clipboard, ReactNative } from "@vendetta/metro/common";
 
 import {
     getChannelStore,
@@ -120,6 +121,19 @@ function probeFetchCandidates(): string[] {
     return fetcher.keys.filter((key) => /fetch|load|get/i.test(key));
 }
 
+function probeShareApis(): Record<string, MetroModuleStatus> {
+    return {
+        reactNativeShare: {
+            found: Boolean(ReactNative?.Share?.share),
+            keys: ReactNative?.Share ? Object.keys(ReactNative.Share).sort() : [],
+        },
+        clipboard: {
+            found: Boolean(clipboard?.setString),
+            keys: clipboard ? Object.keys(clipboard as object).sort() : [],
+        },
+    };
+}
+
 export function runDiscovery(): SpikeReport {
     const modules = {
         messageStore: metroModules.messageStore(),
@@ -129,7 +143,8 @@ export function runDiscovery(): SpikeReport {
         selectedChannel: metroModules.selectedChannel(),
         messageFetcher: metroModules.messageFetcher(),
         lazyActionSheet: metroModules.lazyActionSheet(),
-        reactNative: metroModules.reactNative(),
+        channelsCommon: metroModules.channelsCommon(),
+        ...probeShareApis(),
     };
 
     const channelId = getSelectedChannelId();

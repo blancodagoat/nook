@@ -8,7 +8,7 @@ Let users export messages from any channel they can read (server text channels, 
 
 ## Constraints
 
-- **Platform:** Vendetta (React Native Discord mobile mod). APIs are accessed via `@vendetta/metro` (`findByProps`, `findByDisplayName`) — module names can break on Discord app updates.
+- **Platform:** Vendetta (React Native Discord mobile mod). APIs via `@vendetta/metro` and `@vendetta/metro/common`. See [plugindocs.nexpid.xyz](https://plugindocs.nexpid.xyz).
 - **Vendetta is discontinued** (Feb 2024). This plugin targets Vendetta; Revenge/Kettu forks may need small API adjustments later.
 - **Discord ToS:** Exporting messages from channels you can access is generally fine for personal backup, but bulk automated scraping is discouraged. The plugin should be user-initiated, rate-limited, and scoped to one channel at a time.
 - **Mobile limits:** Large channels can have tens of thousands of messages. Memory and share-sheet size limits mean we need pagination, progress UI, and optional caps.
